@@ -34,6 +34,7 @@ final class LocalAIManager: ObservableObject {
     private let settingsStore: LocalModelSettingsStore
     private var runtimeTelemetry = LocalModelRuntimeTelemetry.empty
     private var settingsValidation = LocalModelSettingsValidation.notChecked
+    private var settingsTestResult = LocalModelSettingsTestResult.notRun
     private var notificationObservers: [NSObjectProtocol] = []
 
     init(
@@ -177,11 +178,13 @@ final class LocalAIManager: ObservableObject {
         settingsStore.save(clampedSettings)
         unloadModel(reason: "Reloading local model with updated settings.")
         settingsValidation = .notChecked
+        settingsTestResult = .notRun
 
         var updatedDiagnostics = diagnostics
         updatedDiagnostics.status = .notChecked
         updatedDiagnostics.loadDuration = nil
         updatedDiagnostics.settingsValidation = settingsValidation
+        updatedDiagnostics.settingsTestResult = settingsTestResult
         diagnostics = updatedDiagnostics
     }
 
@@ -217,6 +220,61 @@ final class LocalAIManager: ObservableObject {
         loadState = .idle
         refreshDiagnosticsAfterTelemetryChange()
         await loadModelIfNeeded(progress: progress)
+    }
+
+    func testCurrentSettings(
+        progress: @escaping @MainActor (Double, String) -> Void = { _, _ in }
+    ) async {
+        let startedAt = Date()
+        settingsTestResult = LocalModelSettingsTestResult(
+            status: .running,
+            duration: nil,
+            testedAt: nil
+        )
+        refreshDiagnosticsAfterTelemetryChange()
+
+        await loadModelIfNeeded(progress: progress)
+        guard case .loaded = loadState else {
+            settingsTestResult = LocalModelSettingsTestResult(
+                status: .failed("The local model is not loaded."),
+                duration: Date().timeIntervalSince(startedAt),
+                testedAt: Date()
+            )
+            refreshDiagnosticsAfterTelemetryChange()
+            return
+        }
+
+        let stream = generateResponse(
+            prompt: "Reply with exactly: OK",
+            history: [ChatMessage(role: .user, text: "Reply with exactly: OK")]
+        )
+        var response = ""
+
+        for await token in stream {
+            response += token
+            if response.count >= 32 {
+                cancelGeneration()
+                break
+            }
+        }
+
+        let duration = Date().timeIntervalSince(startedAt)
+        let trimmedResponse = response.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmedResponse.isEmpty {
+            settingsTestResult = LocalModelSettingsTestResult(
+                status: .failed("The model returned an empty test response."),
+                duration: duration,
+                testedAt: Date()
+            )
+        } else {
+            settingsTestResult = LocalModelSettingsTestResult(
+                status: .passed(trimmedResponse),
+                duration: duration,
+                testedAt: Date()
+            )
+        }
+
+        refreshDiagnosticsAfterTelemetryChange()
     }
 
     func generateResponse(prompt: String, history: [ChatMessage]) -> AsyncStream<String> {
@@ -370,7 +428,8 @@ final class LocalAIManager: ObservableObject {
             status: .unavailable(message),
             loadDuration: nil,
             telemetry: runtimeTelemetry,
-            settingsValidation: settingsValidation
+            settingsValidation: settingsValidation,
+            settingsTestResult: settingsTestResult
         )
     }
 
@@ -400,7 +459,8 @@ final class LocalAIManager: ObservableObject {
             status: status,
             loadDuration: loadDuration,
             telemetry: runtimeTelemetry,
-            settingsValidation: settingsValidation
+            settingsValidation: settingsValidation,
+            settingsTestResult: settingsTestResult
         )
     }
 
@@ -418,5 +478,6 @@ final class LocalAIManager: ObservableObject {
 
         diagnostics.telemetry = runtimeTelemetry
         diagnostics.settingsValidation = settingsValidation
+        diagnostics.settingsTestResult = settingsTestResult
     }
 }

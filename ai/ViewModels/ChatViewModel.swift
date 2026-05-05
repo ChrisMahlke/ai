@@ -131,6 +131,17 @@ final class ChatViewModel: ObservableObject {
         }
     }
 
+    func testModelSettings() {
+        guard let localAIManager else { return }
+
+        Task { [weak self] in
+            await localAIManager.testCurrentSettings { progress, message in
+                self?.setRuntimeState(.loadingModel(progress: progress, message: message))
+            }
+            self?.updateBackendNotice(from: localAIManager.loadState)
+        }
+    }
+
     func retryLocalModelLoad() {
         Task { [weak self] in
             await self?.loadBackendIfNeeded()
@@ -251,7 +262,7 @@ final class ChatViewModel: ObservableObject {
         messages.append(ChatMessage(role: .user, text: trimmedPrompt))
         trimVisibleMessagesIfNeeded()
         prompt = ""
-        generationMetrics = .empty
+        generationMetrics = GenerationMetrics.empty.starting(prompt: trimmedPrompt)
         generationStartedAt = nil
         setRuntimeState(.thinking)
         backendNotice = nil
@@ -289,6 +300,7 @@ final class ChatViewModel: ObservableObject {
     }
 
     func stopGeneration() {
+        let shouldMarkStopped = isResponseActive
         localAIManager?.cancelGeneration()
         responseTask?.cancel()
         responseTask = nil
@@ -296,6 +308,8 @@ final class ChatViewModel: ObservableObject {
 
         if messages.last?.role == .assistant, messages.last?.text.isEmpty == true {
             messages.removeLast()
+        } else if shouldMarkStopped, messages.last?.role == .assistant {
+            messages[messages.count - 1].state = .stopped
         }
 
         trimVisibleMessagesIfNeeded()
@@ -358,7 +372,7 @@ final class ChatViewModel: ObservableObject {
         guard chatID == currentChatID else { return }
 
         generationStartedAt = Date()
-        generationMetrics = .empty
+        generationMetrics = generationMetrics.starting(prompt: lastUserPrompt(for: chatID))
         setRuntimeState(.generating)
         messages.append(ChatMessage(id: id, role: .assistant, text: ""))
         trimVisibleMessagesIfNeeded()
@@ -370,12 +384,14 @@ final class ChatViewModel: ObservableObject {
         guard let messageIndex = messages.firstIndex(where: { $0.id == messageID }) else { return }
 
         messages[messageIndex].text += token
-        updateGenerationMetrics()
+        messages[messageIndex].state = .complete
+        updateGenerationMetrics(token)
         scheduleHistorySave()
     }
 
     private func finishAssistantResponse(chatID: UUID) {
         guard chatID == currentChatID else { return }
+        responseTask = nil
         setRuntimeState(.idle)
         generationStartedAt = nil
         trimVisibleMessagesIfNeeded()
@@ -384,6 +400,7 @@ final class ChatViewModel: ObservableObject {
 
     private func finishCancelledOrEmptyResponse(chatID: UUID) {
         guard chatID == currentChatID else { return }
+        responseTask = nil
         setRuntimeState(.idle)
         generationStartedAt = nil
         scheduleHistorySave()
@@ -520,10 +537,11 @@ final class ChatViewModel: ObservableObject {
         messages = historyPolicy.pruneVisibleMessages(messages)
     }
 
-    private func updateGenerationMetrics() {
+    private func updateGenerationMetrics(_ token: String) {
         guard let generationStartedAt else { return }
 
         generationMetrics = generationMetrics.addingChunk(
+            token,
             elapsedSeconds: Date().timeIntervalSince(generationStartedAt)
         )
     }
@@ -534,8 +552,9 @@ final class ChatViewModel: ObservableObject {
         let body = messages
             .map { message in
                 let speaker = message.role == .user ? "You" : "Assistant"
-                return "\(speaker): \(message.text)"
-            }
+            let suffix = message.state == .stopped ? " [stopped]" : ""
+            return "\(speaker): \(message.text)\(suffix)"
+        }
             .joined(separator: "\n\n")
 
         return "\(chatTitle)\n\n\(body)"
@@ -546,5 +565,11 @@ final class ChatViewModel: ObservableObject {
         guard !trimmedTitle.isEmpty else { return nil }
 
         return String(trimmedTitle.prefix(80))
+    }
+
+    private func lastUserPrompt(for chatID: UUID) -> String {
+        guard chatID == currentChatID else { return "" }
+
+        return messages.last { $0.role == .user }?.text ?? ""
     }
 }

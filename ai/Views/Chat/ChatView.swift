@@ -99,6 +99,7 @@ struct ChatView: View {
                 archiveChat: viewModel.archiveCurrentChatAndStartNew,
                 saveModelSettings: viewModel.updateModelSettings,
                 validateModelSettings: viewModel.validateModelSettings,
+                testModelSettings: viewModel.testModelSettings,
                 clearChatHistory: viewModel.clearChatHistory
             )
         }

@@ -78,10 +78,12 @@ struct ChatComposerView: View {
         }
 
         if generationMetrics.hasValue {
+            let latencyText = generationMetrics.firstTokenLatency.map { String(format: "%.1fs first", $0) } ?? "first token n/a"
             return String(
-                format: "Last response: %d chunks · %.1f chunks/s.",
-                generationMetrics.tokenChunks,
-                generationMetrics.chunksPerSecond
+                format: "Last response: ~%d tokens · %.1f tok/s · %@.",
+                generationMetrics.outputEstimatedTokens,
+                generationMetrics.tokensPerSecond,
+                latencyText
             )
         }
 

@@ -27,6 +27,7 @@ struct LocalModelDiagnostics: Equatable, Sendable {
     var loadDuration: TimeInterval?
     var telemetry: LocalModelRuntimeTelemetry
     var settingsValidation: LocalModelSettingsValidation
+    var settingsTestResult: LocalModelSettingsTestResult
 
     nonisolated static let empty = LocalModelDiagnostics(
         modelName: "Local model",
@@ -38,6 +39,7 @@ struct LocalModelDiagnostics: Equatable, Sendable {
         status: .notChecked,
         loadDuration: nil,
         telemetry: .empty,
-        settingsValidation: .notChecked
+        settingsValidation: .notChecked,
+        settingsTestResult: .notRun
     )
 }

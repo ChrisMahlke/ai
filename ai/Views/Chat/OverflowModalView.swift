@@ -18,6 +18,7 @@ struct OverflowModalView: View {
     let archiveChat: () -> Void
     let saveModelSettings: (LocalModelSettings) -> Void
     let validateModelSettings: () -> Void
+    let testModelSettings: () -> Void
     let clearChatHistory: () -> Void
 
     @State private var draftSettings: LocalModelSettings
@@ -35,6 +36,7 @@ struct OverflowModalView: View {
         archiveChat: @escaping () -> Void,
         saveModelSettings: @escaping (LocalModelSettings) -> Void,
         validateModelSettings: @escaping () -> Void,
+        testModelSettings: @escaping () -> Void,
         clearChatHistory: @escaping () -> Void
     ) {
         self.item = item
@@ -47,6 +49,7 @@ struct OverflowModalView: View {
         self.archiveChat = archiveChat
         self.saveModelSettings = saveModelSettings
         self.validateModelSettings = validateModelSettings
+        self.testModelSettings = testModelSettings
         self.clearChatHistory = clearChatHistory
         _draftSettings = State(initialValue: modelSettings)
         _draftTitle = State(initialValue: currentChatTitle == "New chat" ? "" : currentChatTitle)
@@ -76,6 +79,7 @@ struct OverflowModalView: View {
                                 diagnostics: modelDiagnostics,
                                 save: saveModelSettings,
                                 validate: validateModelSettings,
+                                test: testModelSettings,
                                 clearChatHistory: {
                                     isConfirmingHistoryClear = true
                                 }
@@ -258,6 +262,7 @@ private struct LocalModelSettingsContent: View {
     let diagnostics: LocalModelDiagnostics
     let save: (LocalModelSettings) -> Void
     let validate: () -> Void
+    let test: () -> Void
     let clearChatHistory: () -> Void
 
     private var hasChanges: Bool {
@@ -277,7 +282,12 @@ private struct LocalModelSettingsContent: View {
     }
 
     private var presetPanel: some View {
-        ModalPanel {
+        let recommendation = LocalModelRecommendation.current(
+            physicalMemoryBytes: diagnostics.physicalMemoryBytes,
+            thermalState: diagnostics.thermalState
+        )
+
+        return ModalPanel {
             VStack(alignment: .leading, spacing: 14) {
                 HStack {
                     SectionTitle("Preset")
@@ -300,6 +310,7 @@ private struct LocalModelSettingsContent: View {
                         PresetButton(
                             preset: preset,
                             isSelected: LocalModelPreset.exactMatch(for: draftSettings) == preset,
+                            isRecommended: recommendation.preset == preset,
                             select: {
                                 draftSettings = preset.settings
                             }
@@ -311,6 +322,33 @@ private struct LocalModelSettingsContent: View {
                     .font(.system(size: 12, weight: .regular))
                     .foregroundStyle(.white.opacity(0.45))
                     .fixedSize(horizontal: false, vertical: true)
+
+                Button {
+                    draftSettings = recommendation.preset.settings
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "wand.and.stars")
+                            .font(.system(size: 12, weight: .semibold))
+
+                        Text("Use \(recommendation.preset.rawValue)")
+                            .font(.system(size: 13, weight: .semibold))
+
+                        Spacer(minLength: 8)
+
+                        Text(recommendation.reason)
+                            .font(.system(size: 11, weight: .regular))
+                            .foregroundStyle(.white.opacity(0.44))
+                            .lineLimit(1)
+                    }
+                    .foregroundStyle(.white.opacity(0.78))
+                    .padding(.horizontal, 12)
+                    .frame(height: 38)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .fill(Color.white.opacity(0.06))
+                    )
+                }
+                .buttonStyle(.plain)
             }
         }
     }
@@ -332,6 +370,7 @@ private struct LocalModelSettingsContent: View {
                     DiagnosticRow(label: "Size", value: byteString(diagnostics.fileSizeBytes))
                     DiagnosticRow(label: "Status", value: statusText)
                     DiagnosticRow(label: "Settings", value: settingsValidationText)
+                    DiagnosticRow(label: "Test", value: settingsTestText)
                     DiagnosticRow(label: "Device memory", value: byteString(diagnostics.physicalMemoryBytes))
 
                     if let appMemoryBytes = diagnostics.appMemoryBytes {
@@ -349,15 +388,27 @@ private struct LocalModelSettingsContent: View {
                     }
                 }
 
-                Button(action: validate) {
-                    Text("Validate settings")
-                        .font(.system(size: 14, weight: .semibold))
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 42)
-                        .background(Color.white.opacity(0.1))
-                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                HStack(spacing: 10) {
+                    Button(action: validate) {
+                        Text("Validate")
+                            .font(.system(size: 14, weight: .semibold))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 42)
+                            .background(Color.white.opacity(0.1))
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+
+                    Button(action: test) {
+                        Text("Test")
+                            .font(.system(size: 14, weight: .semibold))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 42)
+                            .background(Color.white.opacity(0.1))
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
         }
     }
@@ -572,6 +623,23 @@ private struct LocalModelSettingsContent: View {
         }
     }
 
+    private var settingsTestText: String {
+        switch diagnostics.settingsTestResult.status {
+        case .notRun:
+            return "Not run"
+        case .running:
+            return "Running"
+        case .passed(let response):
+            if let duration = diagnostics.settingsTestResult.duration {
+                return String(format: "Passed in %.1fs: %@", duration, response)
+            }
+
+            return "Passed: \(response)"
+        case .failed(let message):
+            return message
+        }
+    }
+
     private func byteString(_ bytes: UInt64) -> String {
         guard bytes > 0 else { return "Unknown" }
 
@@ -672,6 +740,7 @@ private struct DiagnosticRow: View {
 private struct PresetButton: View {
     let preset: LocalModelPreset
     let isSelected: Bool
+    let isRecommended: Bool
     let select: () -> Void
 
     var body: some View {
@@ -681,6 +750,12 @@ private struct PresetButton: View {
                     Text(preset.rawValue)
                         .font(.system(size: 15, weight: .medium))
                         .foregroundStyle(.white.opacity(0.9))
+
+                    if isRecommended {
+                        Text("Recommended")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(.white.opacity(0.5))
+                    }
 
                     Text(preset.subtitle)
                         .font(.system(size: 12, weight: .regular))

@@ -23,6 +23,7 @@ struct ChatHeaderView: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Open menu")
+            .accessibilityHint("Shows or hides the chat menu")
 
             Text(title)
                 .font(.system(size: 16, weight: .medium))
@@ -39,6 +40,7 @@ struct ChatHeaderView: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Start new chat")
+            .accessibilityHint("Saves the current chat if needed and opens an empty chat")
 
             Button(action: shareChat) {
                 Image(systemName: "square.and.arrow.up")
@@ -47,6 +49,7 @@ struct ChatHeaderView: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Share chat")
+            .accessibilityHint("Opens the iOS share sheet for this chat transcript")
 
             Button(action: toggleOverflow) {
                 Image(systemName: "ellipsis")

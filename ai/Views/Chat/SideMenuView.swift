@@ -11,7 +11,9 @@ import UIKit
 struct SideMenuView: View {
     let recentChats: [ChatSession]
     let onNewChat: () -> Void
+    let onSavedPrompts: () -> Void
     let onSelectChat: (ChatSession) -> Void
+    let onTogglePin: (ChatSession) -> Void
     let onDeleteChat: (ChatSession) -> Void
     let close: () -> Void
 
@@ -34,7 +36,7 @@ struct SideMenuView: View {
             menuButton(title: "New chat", icon: "square.and.pencil", action: onNewChat)
                 .padding(.horizontal, 10)
 
-            menuButton(title: "Saved prompts", icon: "bookmark", action: close)
+            menuButton(title: "Saved prompts", icon: "bookmark", action: onSavedPrompts)
                 .padding(.horizontal, 10)
                 .padding(.top, 4)
 
@@ -110,7 +112,7 @@ struct SideMenuView: View {
                 .padding(.horizontal, 10)
                 .padding(.bottom, 18)
             }
-            .frame(maxHeight: 320)
+            .frame(maxHeight: .infinity)
         }
     }
 
@@ -178,6 +180,7 @@ struct SideMenuView: View {
                 HStack(spacing: 12) {
                     Image(systemName: "message")
                         .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(chat.isPinned ? .white.opacity(0.78) : .white.opacity(0.5))
                         .frame(width: 22)
 
                     VStack(alignment: .leading, spacing: 3) {
@@ -212,6 +215,18 @@ struct SideMenuView: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .accessibilityLabel(chat.isPinned ? "Pinned chat, \(chat.title)" : "Chat, \(chat.title)")
+
+            Button {
+                onTogglePin(chat)
+            } label: {
+                Image(systemName: chat.isPinned ? "pin.fill" : "pin")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(chat.isPinned ? .white.opacity(0.68) : .white.opacity(0.32))
+                    .frame(width: 32, height: 34)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(chat.isPinned ? "Unpin chat" : "Pin chat")
 
             Button {
                 onDeleteChat(chat)
@@ -231,6 +246,12 @@ struct SideMenuView: View {
                 .fill(Color.white.opacity(0.045))
         )
         .contextMenu {
+            Button {
+                onTogglePin(chat)
+            } label: {
+                Label(chat.isPinned ? "Unpin" : "Pin", systemImage: chat.isPinned ? "pin.slash" : "pin")
+            }
+
             Button(role: .destructive) {
                 onDeleteChat(chat)
             } label: {

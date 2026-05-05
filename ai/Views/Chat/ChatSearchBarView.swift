@@ -21,12 +21,14 @@ struct ChatSearchBarView: View {
                 .font(.system(size: 14, weight: .regular))
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
+                .accessibilityLabel("Search this chat")
 
             if !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 Text(matchCount == 1 ? "1 match" : "\(matchCount) matches")
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(.white.opacity(0.42))
                     .lineLimit(1)
+                    .accessibilityLabel(matchCount == 1 ? "1 search match" : "\(matchCount) search matches")
 
                 Button {
                     query = ""

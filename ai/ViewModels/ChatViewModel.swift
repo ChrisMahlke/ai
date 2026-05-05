@@ -25,12 +25,15 @@ final class ChatViewModel: ObservableObject {
     @Published private(set) var backendNotice: String?
     @Published private(set) var generationMetrics = GenerationMetrics.empty
     @Published private(set) var selectedProvider: ChatProvider
+    @Published private(set) var promptTemplates: [PromptTemplate]
 
     @Published var prompt = ""
     @Published var chatSearchQuery = ""
     @Published var isDrawerOpen = false
+    @Published var isSidebarCollapsed = false
     @Published var isOverflowOpen = false
     @Published var presentedOverflowItem: OverflowMenuItem?
+    @Published var isPromptLibraryPresented = false
     @Published var isComposerFocused = false
     @Published var composerInputHeight: CGFloat = 20
     @Published var sharePayload: SharePayload?
@@ -40,6 +43,7 @@ final class ChatViewModel: ObservableObject {
     private let localAIManager: LocalAIManager?
     private let historyStore: ChatHistoryStore
     private let providerStore: ChatProviderStore
+    private let promptTemplateStore: PromptTemplateStore
     private var responseTask: Task<Void, Never>?
     private var pendingHistorySaveTask: Task<Void, Never>?
     private var generationStartedAt: Date?
@@ -49,17 +53,21 @@ final class ChatViewModel: ObservableObject {
     init(
         historyStore: ChatHistoryStore? = nil,
         historyPolicy: ChatHistoryPolicy = .default,
-        providerStore: ChatProviderStore? = nil
+        providerStore: ChatProviderStore? = nil,
+        promptTemplateStore: PromptTemplateStore? = nil
     ) {
         let manager = LocalAIManager.shared
         let resolvedProviderStore = providerStore ?? ChatProviderStore(defaults: .standard)
+        let resolvedPromptTemplateStore = promptTemplateStore ?? PromptTemplateStore()
         self.localAIManager = manager
         self.localResponder = LocalModelChatResponder(manager: manager)
         self.geminiResponder = GeminiChatResponder(configuration: .default)
         self.historyStore = historyStore ?? ChatHistoryStore()
         self.historyPolicy = historyPolicy
         self.providerStore = resolvedProviderStore
+        self.promptTemplateStore = resolvedPromptTemplateStore
         self.selectedProvider = resolvedProviderStore.load()
+        self.promptTemplates = resolvedPromptTemplateStore.load()
         restoreHistory()
         observeLocalAIManager(manager)
         observeApplicationLifecycle()
@@ -70,16 +78,20 @@ final class ChatViewModel: ObservableObject {
         localAIManager: LocalAIManager? = nil,
         historyStore: ChatHistoryStore? = nil,
         historyPolicy: ChatHistoryPolicy = .default,
-        providerStore: ChatProviderStore? = nil
+        providerStore: ChatProviderStore? = nil,
+        promptTemplateStore: PromptTemplateStore? = nil
     ) {
         let resolvedProviderStore = providerStore ?? ChatProviderStore(defaults: .standard)
+        let resolvedPromptTemplateStore = promptTemplateStore ?? PromptTemplateStore()
         self.localResponder = responder
         self.geminiResponder = GeminiChatResponder(configuration: .default)
         self.localAIManager = localAIManager
         self.historyStore = historyStore ?? ChatHistoryStore()
         self.historyPolicy = historyPolicy
         self.providerStore = resolvedProviderStore
+        self.promptTemplateStore = resolvedPromptTemplateStore
         self.selectedProvider = resolvedProviderStore.load()
+        self.promptTemplates = resolvedPromptTemplateStore.load()
         restoreHistory()
         if let localAIManager {
             observeLocalAIManager(localAIManager)
@@ -223,6 +235,10 @@ final class ChatViewModel: ObservableObject {
         isDrawerOpen = false
     }
 
+    func togglePersistentSidebar() {
+        isSidebarCollapsed.toggle()
+    }
+
     func toggleOverflowMenu() {
         isComposerFocused = false
         isOverflowOpen.toggle()
@@ -240,6 +256,45 @@ final class ChatViewModel: ObservableObject {
 
     func dismissOverflowModal() {
         presentedOverflowItem = nil
+    }
+
+    func openPromptLibrary() {
+        isComposerFocused = false
+        isDrawerOpen = false
+        isPromptLibraryPresented = true
+    }
+
+    func dismissPromptLibrary() {
+        isPromptLibraryPresented = false
+    }
+
+    func usePromptTemplate(_ template: PromptTemplate) {
+        guard !isResponseActive else { return }
+
+        prompt = template.text
+        isPromptLibraryPresented = false
+        isComposerFocused = true
+    }
+
+    func savePromptTemplate(title: String, text: String) {
+        let normalizedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let normalizedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalizedTitle.isEmpty, !normalizedText.isEmpty else { return }
+
+        let template = PromptTemplate(
+            title: String(normalizedTitle.prefix(64)),
+            text: String(normalizedText.prefix(2_000)),
+            category: "Saved"
+        )
+        promptTemplates.insert(template, at: PromptTemplate.builtIns.count)
+        promptTemplateStore.save(promptTemplates)
+    }
+
+    func deletePromptTemplate(_ template: PromptTemplate) {
+        guard !template.isBuiltIn else { return }
+
+        promptTemplates.removeAll { $0.id == template.id }
+        promptTemplateStore.save(promptTemplates)
     }
 
     func shareCurrentChat() {
@@ -292,6 +347,14 @@ final class ChatViewModel: ObservableObject {
         scheduleHistorySave()
     }
 
+    func togglePinnedRecentChat(_ chat: ChatSession) {
+        guard let chatIndex = recentChats.firstIndex(where: { $0.id == chat.id }) else { return }
+
+        recentChats[chatIndex].isPinned.toggle()
+        sortRecentChats()
+        scheduleHistorySave()
+    }
+
     func clearChatHistory() {
         stopGeneration()
         currentChatID = UUID()
@@ -335,6 +398,43 @@ final class ChatViewModel: ObservableObject {
         scheduleHistorySave()
 
         startResponse(for: lastPrompt, history: messages)
+    }
+
+    func editMessage(_ message: ChatMessage) {
+        guard !isResponseActive, message.role == .user,
+              let messageIndex = messages.firstIndex(where: { $0.id == message.id })
+        else { return }
+
+        prompt = messages[messageIndex].text
+        messages = Array(messages.prefix(messageIndex))
+        setRuntimeState(.idle)
+        generationMetrics = .empty
+        isComposerFocused = true
+        trimVisibleMessagesIfNeeded()
+        scheduleHistorySave()
+    }
+
+    func deleteMessage(_ message: ChatMessage) {
+        guard !isResponseActive else { return }
+        messages.removeAll { $0.id == message.id }
+        if !messages.contains(where: { $0.role == .user }) {
+            currentTitleOverride = nil
+        }
+        generationMetrics = .empty
+        trimVisibleMessagesIfNeeded()
+        scheduleHistorySave()
+    }
+
+    func continueFromMessage(_ message: ChatMessage) {
+        guard !isResponseActive,
+              let messageIndex = messages.firstIndex(where: { $0.id == message.id })
+        else { return }
+
+        messages = Array(messages.prefix(messageIndex + 1))
+        generationMetrics = .empty
+        isComposerFocused = true
+        trimVisibleMessagesIfNeeded()
+        scheduleHistorySave()
     }
 
     private func startResponse(for prompt: String, history: [ChatMessage]) {
@@ -485,13 +585,25 @@ final class ChatViewModel: ObservableObject {
             title: chatTitle,
             messages: Array(messages.suffix(historyPolicy.maxArchivedMessagesPerChat)),
             createdAt: existingSession?.createdAt ?? Date(),
-            updatedAt: Date()
+            updatedAt: Date(),
+            isPinned: existingSession?.isPinned ?? false
         )
 
         recentChats.removeAll { $0.id == currentChatID }
         recentChats.insert(session, at: 0)
+        sortRecentChats()
         if recentChats.count > historyPolicy.maxRecentChats {
             recentChats.removeLast(recentChats.count - historyPolicy.maxRecentChats)
+        }
+    }
+
+    private func sortRecentChats() {
+        recentChats.sort { lhs, rhs in
+            if lhs.isPinned != rhs.isPinned {
+                return lhs.isPinned && !rhs.isPinned
+            }
+
+            return lhs.updatedAt > rhs.updatedAt
         }
     }
 
@@ -619,6 +731,7 @@ final class ChatViewModel: ObservableObject {
         currentTitleOverride = normalizedChatTitle(prunedSnapshot.currentTitleOverride ?? "")
         messages = prunedSnapshot.currentMessages
         recentChats = prunedSnapshot.recentChats
+        sortRecentChats()
     }
 
     private func scheduleHistorySave() {

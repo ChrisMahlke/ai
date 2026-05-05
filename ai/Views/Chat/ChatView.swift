@@ -9,68 +9,33 @@ import SwiftUI
 
 struct ChatView: View {
     @ObservedObject var viewModel: ChatViewModel
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         ZStack(alignment: .leading) {
             AppTheme.background
                 .ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                ChatHeaderView(
-                    title: viewModel.chatTitle,
-                    openMenu: viewModel.openDrawer,
-                    startNewChat: viewModel.startNewChat,
-                    shareChat: viewModel.shareCurrentChat,
-                    toggleOverflow: viewModel.toggleOverflowMenu
-                )
-
-                if viewModel.isModelLoading {
-                    ModelLoadingView(
-                        progress: viewModel.modelLoadProgress,
-                        message: viewModel.modelLoadMessage
+            HStack(spacing: 0) {
+                if usesPersistentSidebar, !viewModel.isSidebarCollapsed {
+                    SideMenuView(
+                        recentChats: viewModel.recentChats,
+                        onNewChat: viewModel.startNewChat,
+                        onSavedPrompts: viewModel.openPromptLibrary,
+                        onSelectChat: viewModel.loadChat,
+                        onTogglePin: viewModel.togglePinnedRecentChat,
+                        onDeleteChat: viewModel.deleteRecentChat,
+                        close: viewModel.togglePersistentSidebar
                     )
+                    .frame(width: 304)
+                    .transition(.move(edge: .leading).combined(with: .opacity))
                 }
 
-                if let backendNotice = viewModel.backendNotice {
-                    ModelStatusBannerView(
-                        message: backendNotice,
-                        retry: viewModel.retryLocalModelLoad,
-                        useEfficient: viewModel.useEfficientModelSettings,
-                        openSettings: viewModel.openModelSettings
-                    )
-                }
-
-                if !viewModel.messages.isEmpty {
-                    ChatSearchBarView(
-                        query: $viewModel.chatSearchQuery,
-                        matchCount: viewModel.chatSearchMatchCount
-                    )
-                }
-
-                ChatMessageListView(
-                    messages: viewModel.messages,
-                    isThinking: viewModel.isThinking,
-                    searchQuery: viewModel.chatSearchQuery,
-                    useSuggestion: viewModel.useSuggestedPrompt
-                )
-
-                ChatComposerView(
-                    prompt: $viewModel.prompt,
-                    isFocused: $viewModel.isComposerFocused,
-                    inputHeight: $viewModel.composerInputHeight,
-                    canSend: viewModel.canSend,
-                    isThinking: viewModel.isThinking,
-                    isGenerating: viewModel.isGenerating,
-                    isResponseActive: viewModel.isResponseActive,
-                    generationMetrics: viewModel.generationMetrics,
-                    canRegenerate: viewModel.canRegenerate,
-                    send: viewModel.sendCurrentPrompt,
-                    stop: viewModel.stopGeneration,
-                    regenerate: viewModel.regenerateLastResponse
-                )
+                chatSurface
+                    .frame(maxWidth: usesPersistentSidebar ? .infinity : 820)
+                    .frame(maxWidth: .infinity)
             }
-            .frame(maxWidth: 820)
-            .frame(maxWidth: .infinity)
 
             if viewModel.isOverflowOpen {
                 OverflowOverlay(
@@ -79,11 +44,13 @@ struct ChatView: View {
                 )
             }
 
-            if viewModel.isDrawerOpen {
+            if !usesPersistentSidebar, viewModel.isDrawerOpen {
                 DrawerOverlay(
                     recentChats: viewModel.recentChats,
                     startNewChat: viewModel.startNewChat,
+                    openPromptLibrary: viewModel.openPromptLibrary,
                     selectChat: viewModel.loadChat,
+                    togglePin: viewModel.togglePinnedRecentChat,
                     deleteChat: viewModel.deleteRecentChat,
                     close: viewModel.closeDrawer
                 )
@@ -96,7 +63,8 @@ struct ChatView: View {
         .onDisappear {
             viewModel.cancelActiveResponse()
         }
-        .animation(.spring(response: 0.34, dampingFraction: 0.86), value: viewModel.isDrawerOpen)
+        .animation(.spring(response: reduceMotion ? 0.01 : 0.34, dampingFraction: 0.86), value: viewModel.isDrawerOpen)
+        .animation(.spring(response: reduceMotion ? 0.01 : 0.34, dampingFraction: 0.86), value: viewModel.isSidebarCollapsed)
         .fullScreenCover(item: $viewModel.presentedOverflowItem) { item in
             OverflowModalView(
                 item: item,
@@ -116,8 +84,81 @@ struct ChatView: View {
                 clearChatHistory: viewModel.clearChatHistory
             )
         }
+        .fullScreenCover(isPresented: $viewModel.isPromptLibraryPresented) {
+            PromptLibraryView(
+                templates: viewModel.promptTemplates,
+                close: viewModel.dismissPromptLibrary,
+                select: viewModel.usePromptTemplate,
+                save: viewModel.savePromptTemplate,
+                delete: viewModel.deletePromptTemplate
+            )
+        }
         .sheet(item: $viewModel.sharePayload) { payload in
             ShareSheet(items: [payload.text])
+        }
+    }
+
+    private var usesPersistentSidebar: Bool {
+        horizontalSizeClass == .regular
+    }
+
+    private var chatSurface: some View {
+        VStack(spacing: 0) {
+            ChatHeaderView(
+                title: viewModel.chatTitle,
+                openMenu: usesPersistentSidebar ? viewModel.togglePersistentSidebar : viewModel.openDrawer,
+                startNewChat: viewModel.startNewChat,
+                shareChat: viewModel.shareCurrentChat,
+                toggleOverflow: viewModel.toggleOverflowMenu
+            )
+
+            if viewModel.isModelLoading {
+                ModelLoadingView(
+                    progress: viewModel.modelLoadProgress,
+                    message: viewModel.modelLoadMessage
+                )
+            }
+
+            if let backendNotice = viewModel.backendNotice {
+                ModelStatusBannerView(
+                    message: backendNotice,
+                    retry: viewModel.retryLocalModelLoad,
+                    useEfficient: viewModel.useEfficientModelSettings,
+                    openSettings: viewModel.openModelSettings
+                )
+            }
+
+            if !viewModel.messages.isEmpty {
+                ChatSearchBarView(
+                    query: $viewModel.chatSearchQuery,
+                    matchCount: viewModel.chatSearchMatchCount
+                )
+            }
+
+            ChatMessageListView(
+                messages: viewModel.messages,
+                isThinking: viewModel.isThinking,
+                searchQuery: viewModel.chatSearchQuery,
+                useSuggestion: viewModel.useSuggestedPrompt,
+                editMessage: viewModel.editMessage,
+                deleteMessage: viewModel.deleteMessage,
+                continueFromMessage: viewModel.continueFromMessage
+            )
+
+            ChatComposerView(
+                prompt: $viewModel.prompt,
+                isFocused: $viewModel.isComposerFocused,
+                inputHeight: $viewModel.composerInputHeight,
+                canSend: viewModel.canSend,
+                isThinking: viewModel.isThinking,
+                isGenerating: viewModel.isGenerating,
+                isResponseActive: viewModel.isResponseActive,
+                generationMetrics: viewModel.generationMetrics,
+                canRegenerate: viewModel.canRegenerate,
+                send: viewModel.sendCurrentPrompt,
+                stop: viewModel.stopGeneration,
+                regenerate: viewModel.regenerateLastResponse
+            )
         }
     }
 }
@@ -145,7 +186,9 @@ private struct OverflowOverlay: View {
 private struct DrawerOverlay: View {
     let recentChats: [ChatSession]
     let startNewChat: () -> Void
+    let openPromptLibrary: () -> Void
     let selectChat: (ChatSession) -> Void
+    let togglePin: (ChatSession) -> Void
     let deleteChat: (ChatSession) -> Void
     let close: () -> Void
 
@@ -158,7 +201,9 @@ private struct DrawerOverlay: View {
             SideMenuView(
                 recentChats: recentChats,
                 onNewChat: startNewChat,
+                onSavedPrompts: openPromptLibrary,
                 onSelectChat: selectChat,
+                onTogglePin: togglePin,
                 onDeleteChat: deleteChat,
                 close: close
             )

@@ -6,12 +6,16 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct ChatMessageListView: View {
     let messages: [ChatMessage]
     let isThinking: Bool
     let searchQuery: String
     let useSuggestion: (String) -> Void
+    let editMessage: (ChatMessage) -> Void
+    let deleteMessage: (ChatMessage) -> Void
+    let continueFromMessage: (ChatMessage) -> Void
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -22,7 +26,14 @@ struct ChatMessageListView: View {
                     }
 
                     ForEach(messages) { message in
-                        MessageRowView(message: message, searchQuery: searchQuery)
+                        MessageRowView(
+                            message: message,
+                            searchQuery: searchQuery,
+                            canContinueFromHere: message.id != messages.last?.id,
+                            editMessage: editMessage,
+                            deleteMessage: deleteMessage,
+                            continueFromMessage: continueFromMessage
+                        )
                             .id(message.id)
                     }
 
@@ -50,7 +61,7 @@ struct ChatMessageListView: View {
     }
 
     private func scrollToBottom(with proxy: ScrollViewProxy) {
-        withAnimation(.easeOut(duration: 0.25)) {
+        withAnimation(.easeOut(duration: UIAccessibility.isReduceMotionEnabled ? 0.01 : 0.25)) {
             proxy.scrollTo("bottom", anchor: .bottom)
         }
     }

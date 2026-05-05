@@ -11,6 +11,10 @@ import UIKit
 struct MessageRowView: View {
     let message: ChatMessage
     let searchQuery: String
+    let canContinueFromHere: Bool
+    let editMessage: (ChatMessage) -> Void
+    let deleteMessage: (ChatMessage) -> Void
+    let continueFromMessage: (ChatMessage) -> Void
 
     private var isUser: Bool {
         message.role == .user
@@ -42,9 +46,33 @@ struct MessageRowView: View {
                         Button {
                             UIPasteboard.general.string = message.text
                         } label: {
-                            Label("Copy", systemImage: "doc.on.doc")
+                            Label(isUser ? "Copy message" : "Copy response", systemImage: "doc.on.doc")
+                        }
+
+                        if isUser {
+                            Button {
+                                editMessage(message)
+                            } label: {
+                                Label("Edit message", systemImage: "pencil")
+                            }
+                        }
+
+                        if canContinueFromHere {
+                            Button {
+                                continueFromMessage(message)
+                            } label: {
+                                Label("Continue from here", systemImage: "arrow.turn.down.right")
+                            }
+                        }
+
+                        Button(role: .destructive) {
+                            deleteMessage(message)
+                        } label: {
+                            Label("Delete message", systemImage: "trash")
                         }
                     }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel(isUser ? "Your message" : "Assistant response")
 
                 if message.state == .stopped {
                     stateBadge("Stopped", foreground: .white.opacity(0.42), background: .white.opacity(0.055))

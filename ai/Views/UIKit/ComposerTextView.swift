@@ -21,6 +21,7 @@ struct ComposerTextView: UIViewRepresentable {
         textView.delegate = context.coordinator
         textView.backgroundColor = .clear
         textView.font = .systemFont(ofSize: 16)
+        textView.adjustsFontForContentSizeCategory = true
         textView.textColor = .white
         textView.tintColor = .white
         textView.textContainerInset = .zero
@@ -37,6 +38,8 @@ struct ComposerTextView: UIViewRepresentable {
         textView.inputAssistantItem.leadingBarButtonGroups = []
         textView.inputAssistantItem.trailingBarButtonGroups = []
         textView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        textView.accessibilityLabel = "Message"
+        textView.accessibilityHint = "Type a message. Press return to send."
         return textView
     }
 

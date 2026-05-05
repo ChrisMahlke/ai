@@ -42,7 +42,8 @@ struct ChatHistoryPolicy: Equatable, Sendable {
                 title: chat.title,
                 messages: messages,
                 createdAt: chat.createdAt,
-                updatedAt: chat.updatedAt
+                updatedAt: chat.updatedAt,
+                isPinned: chat.isPinned
             ))
         }
 
@@ -66,7 +67,7 @@ struct ChatHistoryPolicy: Equatable, Sendable {
 
             let text = String(message.text.prefix(min(message.text.count, maxCharactersPerMessage, remainingCharacters)))
             remainingCharacters -= text.count
-            pruned.append(ChatMessage(id: message.id, role: message.role, text: text))
+            pruned.append(ChatMessage(id: message.id, role: message.role, text: text, state: message.state))
         }
 
         return pruned.reversed()

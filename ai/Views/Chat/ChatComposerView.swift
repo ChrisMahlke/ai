@@ -37,6 +37,7 @@ struct ChatComposerView: View {
                 }
                 .disabled(!isResponseActive && !canSend)
                 .accessibilityLabel(isResponseActive ? "Stop response" : "Send message")
+                .accessibilityHint(isResponseActive ? "Stops the current generation" : "Sends the typed message")
             }
 
             HStack(spacing: 10) {
@@ -57,6 +58,7 @@ struct ChatComposerView: View {
                     .buttonStyle(.plain)
                     .foregroundStyle(.white.opacity(0.52))
                     .accessibilityLabel("Regenerate last response")
+                    .accessibilityHint("Runs the last user message again with current settings")
                 }
             }
             .frame(maxWidth: .infinity, alignment: .center)

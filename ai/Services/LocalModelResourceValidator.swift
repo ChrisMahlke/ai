@@ -13,6 +13,29 @@ struct LocalModelResourceValidator {
         case invalid(String)
     }
 
+    func installedModel(for profile: LocalModelProfile, bundle: Bundle = .main) -> InstalledLocalModel {
+        switch validate(resource: profile.resource, bundle: bundle) {
+        case .valid(_, let fileSizeBytes):
+            return InstalledLocalModel(
+                profile: profile,
+                isInstalled: true,
+                fileSizeBytes: fileSizeBytes,
+                statusText: "Installed"
+            )
+        case .invalid(let message):
+            return InstalledLocalModel(
+                profile: profile,
+                isInstalled: false,
+                fileSizeBytes: 0,
+                statusText: message
+            )
+        }
+    }
+
+    func installedModels(bundle: Bundle = .main) -> [InstalledLocalModel] {
+        LocalModelProfile.allCases.map { installedModel(for: $0, bundle: bundle) }
+    }
+
     func validate(resource: LocalModelResource, bundle: Bundle = .main) -> Result {
         guard let modelURL = bundle.url(forResource: resource.name, withExtension: resource.fileExtension) else {
             return .invalid("Add \(resource.fileName) to the app bundle to enable offline responses.")

@@ -21,6 +21,8 @@ Important runtime components:
 - `ChatViewModel`: owns UI state, chat persistence, runtime state, recent chats, sharing, archiving, renaming, and bounded history pruning.
 - `ChatHistoryPolicy`: keeps restored and persisted chat history bounded for memory and storage safety.
 - `LocalModelMemoryPolicy`: blocks model loading when memory, model size, or thermal state make local inference unsafe.
+- `LocalModelProfile`: describes selectable local model profiles, from the bundled small/fast model to optional higher-quality GGUF profiles.
+- `LocalModelResourceValidator`: validates bundled model resources and powers the Models screen installation status.
 
 ## Requirements
 
@@ -37,6 +39,14 @@ ai/Models/google_gemma-3-1b-it-Q4_K_M.gguf
 
 Model weights are intentionally ignored by Git because they are large binary artifacts. Keep the filename above unless `LocalModelResource.swift` is updated to match a different model.
 
+The Models screen also recognizes an optional higher-quality profile:
+
+```text
+ai/Models/google_gemma-3-4b-it-Q4_K_M.gguf
+```
+
+Only installed profiles can be selected. Larger profiles should be tested on target hardware before shipping because app size, RAM pressure, and thermal behavior change materially.
+
 ## Local Model Notes
 
 This project is tuned around constrained-memory devices. The Settings screen exposes three model profiles:
@@ -46,6 +56,13 @@ This project is tuned around constrained-memory devices. The Settings screen exp
 - `Expanded`: larger context/output settings when memory allows.
 
 Manual settings become `Custom` and are saved on device. Changing settings unloads the current model; the next generation reloads the model with the new options.
+
+The app also includes:
+
+- a first-run onboarding screen explaining the local model requirement,
+- a Models screen for installed GGUF profile status and active profile selection,
+- anonymized diagnostics copying for troubleshooting,
+- an appearance preference for System, Dark, and restrained Light presentation.
 
 ## Build
 

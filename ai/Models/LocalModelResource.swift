@@ -25,4 +25,12 @@ struct LocalModelResource: Equatable, Sendable {
         minimumFileSizeBytes: 650 * 1_024 * 1_024,
         maximumFileSizeBytes: 900 * 1_024 * 1_024
     )
+
+    nonisolated static let gemma3FourBInt4 = LocalModelResource(
+        name: "google_gemma-3-4b-it-Q4_K_M",
+        fileExtension: "gguf",
+        maxSequenceLength: 4096,
+        minimumFileSizeBytes: 2_400 * 1_024 * 1_024,
+        maximumFileSizeBytes: 3_800 * 1_024 * 1_024
+    )
 }

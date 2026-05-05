@@ -74,13 +74,20 @@ struct ChatView: View {
                 modelDiagnostics: viewModel.modelDiagnostics,
                 selectedProvider: viewModel.selectedProvider,
                 providerStatus: viewModel.providerStatus,
+                activeModelProfile: viewModel.activeModelProfile,
+                installedModels: viewModel.installedModels,
+                appearanceMode: viewModel.appearanceMode,
+                diagnosticsReport: viewModel.anonymizedDiagnosticsReport,
                 close: viewModel.dismissOverflowModal,
                 renameChat: viewModel.renameCurrentChat,
                 archiveChat: viewModel.archiveCurrentChatAndStartNew,
                 saveModelSettings: viewModel.updateModelSettings,
                 selectProvider: viewModel.selectProvider,
+                selectModelProfile: viewModel.selectModelProfile,
+                updateAppearanceMode: viewModel.updateAppearanceMode,
                 validateModelSettings: viewModel.validateModelSettings,
                 testModelSettings: viewModel.testModelSettings,
+                copyDiagnostics: viewModel.copyDiagnosticsReport,
                 clearChatHistory: viewModel.clearChatHistory
             )
         }
@@ -96,6 +103,13 @@ struct ChatView: View {
         .sheet(item: $viewModel.sharePayload) { payload in
             ShareSheet(items: [payload.text])
         }
+        .fullScreenCover(isPresented: $viewModel.isOnboardingPresented) {
+            OnboardingView(
+                installedModels: viewModel.installedModels,
+                complete: viewModel.completeOnboarding
+            )
+        }
+        .preferredColorScheme(viewModel.appearanceMode.colorScheme)
     }
 
     private var usesPersistentSidebar: Bool {

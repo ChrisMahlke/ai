@@ -15,13 +15,20 @@ struct OverflowModalView: View {
     let modelDiagnostics: LocalModelDiagnostics
     let selectedProvider: ChatProvider
     let providerStatus: ProviderStatus
+    let activeModelProfile: LocalModelProfile
+    let installedModels: [InstalledLocalModel]
+    let appearanceMode: AppAppearanceMode
+    let diagnosticsReport: String
     let close: () -> Void
     let renameChat: (String) -> Void
     let archiveChat: () -> Void
     let saveModelSettings: (LocalModelSettings) -> Void
     let selectProvider: (ChatProvider) -> Void
+    let selectModelProfile: (LocalModelProfile) -> Void
+    let updateAppearanceMode: (AppAppearanceMode) -> Void
     let validateModelSettings: () -> Void
     let testModelSettings: () -> Void
+    let copyDiagnostics: () -> Void
     let clearChatHistory: () -> Void
 
     @State private var draftSettings: LocalModelSettings
@@ -36,13 +43,20 @@ struct OverflowModalView: View {
         modelDiagnostics: LocalModelDiagnostics,
         selectedProvider: ChatProvider,
         providerStatus: ProviderStatus,
+        activeModelProfile: LocalModelProfile,
+        installedModels: [InstalledLocalModel],
+        appearanceMode: AppAppearanceMode,
+        diagnosticsReport: String,
         close: @escaping () -> Void,
         renameChat: @escaping (String) -> Void,
         archiveChat: @escaping () -> Void,
         saveModelSettings: @escaping (LocalModelSettings) -> Void,
         selectProvider: @escaping (ChatProvider) -> Void,
+        selectModelProfile: @escaping (LocalModelProfile) -> Void,
+        updateAppearanceMode: @escaping (AppAppearanceMode) -> Void,
         validateModelSettings: @escaping () -> Void,
         testModelSettings: @escaping () -> Void,
+        copyDiagnostics: @escaping () -> Void,
         clearChatHistory: @escaping () -> Void
     ) {
         self.item = item
@@ -52,13 +66,20 @@ struct OverflowModalView: View {
         self.modelDiagnostics = modelDiagnostics
         self.selectedProvider = selectedProvider
         self.providerStatus = providerStatus
+        self.activeModelProfile = activeModelProfile
+        self.installedModels = installedModels
+        self.appearanceMode = appearanceMode
+        self.diagnosticsReport = diagnosticsReport
         self.close = close
         self.renameChat = renameChat
         self.archiveChat = archiveChat
         self.saveModelSettings = saveModelSettings
         self.selectProvider = selectProvider
+        self.selectModelProfile = selectModelProfile
+        self.updateAppearanceMode = updateAppearanceMode
         self.validateModelSettings = validateModelSettings
         self.testModelSettings = testModelSettings
+        self.copyDiagnostics = copyDiagnostics
         self.clearChatHistory = clearChatHistory
         _draftSettings = State(initialValue: modelSettings)
         _draftTitle = State(initialValue: currentChatTitle == "New chat" ? "" : currentChatTitle)
@@ -81,6 +102,17 @@ struct OverflowModalView: View {
                             renameContent
                         case .archive:
                             archiveContent
+                        case .models:
+                            ModelManagementContent(
+                                activeModelProfile: activeModelProfile,
+                                installedModels: installedModels,
+                                selectModelProfile: selectModelProfile
+                            )
+                        case .diagnostics:
+                            DiagnosticsExportContent(
+                                report: diagnosticsReport,
+                                copyDiagnostics: copyDiagnostics
+                            )
                         case .settings:
                             LocalModelSettingsContent(
                                 currentSettings: modelSettings,
@@ -88,8 +120,10 @@ struct OverflowModalView: View {
                                 diagnostics: modelDiagnostics,
                                 selectedProvider: selectedProvider,
                                 providerStatus: providerStatus,
+                                appearanceMode: appearanceMode,
                                 save: saveModelSettings,
                                 selectProvider: selectProvider,
+                                updateAppearanceMode: updateAppearanceMode,
                                 validate: validateModelSettings,
                                 test: testModelSettings,
                                 clearChatHistory: {
@@ -268,14 +302,169 @@ struct OverflowModalView: View {
     }
 }
 
+private struct ModelManagementContent: View {
+    let activeModelProfile: LocalModelProfile
+    let installedModels: [InstalledLocalModel]
+    let selectModelProfile: (LocalModelProfile) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            ModalPanel {
+                VStack(alignment: .leading, spacing: 14) {
+                    SectionTitle("Installed models")
+
+                    VStack(spacing: 8) {
+                        ForEach(installedModels) { model in
+                            modelRow(model)
+                        }
+                    }
+                }
+            }
+
+            ModalPanel {
+                VStack(alignment: .leading, spacing: 10) {
+                    SectionTitle("Install")
+
+                    Text("Add GGUF files to `ai/Models`, include them in the app target, then rebuild. Keep only the models you need in the target because each bundled model increases app size and memory pressure.")
+                        .font(.system(size: 14, weight: .regular))
+                        .foregroundStyle(.white.opacity(0.58))
+                        .lineSpacing(4)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        ForEach(LocalModelProfile.allCases) { profile in
+                            Text(profile.installationNote)
+                                .font(.system(size: 12, weight: .regular, design: .monospaced))
+                                .foregroundStyle(.white.opacity(0.44))
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func modelRow(_ model: InstalledLocalModel) -> some View {
+        let isActive = model.profile == activeModelProfile
+
+        return HStack(alignment: .top, spacing: 12) {
+            Image(systemName: model.isInstalled ? "checkmark.circle.fill" : "arrow.down.circle")
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(model.isInstalled ? .green.opacity(0.82) : .white.opacity(0.32))
+                .frame(width: 24, height: 24)
+
+            VStack(alignment: .leading, spacing: 5) {
+                HStack(spacing: 8) {
+                    Text(model.profile.title)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.white.opacity(0.9))
+
+                    if isActive {
+                        Text("Active")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundStyle(.black.opacity(0.78))
+                            .padding(.horizontal, 7)
+                            .frame(height: 20)
+                            .background(Color.white.opacity(0.88))
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    }
+                }
+
+                Text(model.profile.subtitle)
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundStyle(.white.opacity(0.48))
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Text(model.isInstalled ? byteString(model.fileSizeBytes) : model.statusText)
+                    .font(.system(size: 11, weight: .regular))
+                    .foregroundStyle(.white.opacity(0.38))
+                    .lineLimit(3)
+            }
+
+            Spacer(minLength: 10)
+
+            Button {
+                selectModelProfile(model.profile)
+            } label: {
+                Text(isActive ? "Selected" : "Use")
+                    .font(.system(size: 13, weight: .semibold))
+                    .frame(width: 72, height: 36)
+                    .background(model.isInstalled && !isActive ? Color.white : Color.white.opacity(0.1))
+                    .foregroundStyle(model.isInstalled && !isActive ? Color.black : Color.white.opacity(0.46))
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .disabled(!model.isInstalled || isActive)
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(Color.white.opacity(isActive ? 0.08 : 0.045))
+                .stroke(Color.white.opacity(isActive ? 0.16 : 0.07), lineWidth: 1)
+        )
+    }
+
+    private func byteString(_ bytes: UInt64) -> String {
+        guard bytes > 0 else { return "Unknown size" }
+
+        return ByteCountFormatter.string(fromByteCount: Int64(bytes), countStyle: .memory)
+    }
+}
+
+private struct DiagnosticsExportContent: View {
+    let report: String
+    let copyDiagnostics: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            ModalPanel {
+                VStack(alignment: .leading, spacing: 14) {
+                    SectionTitle("Report")
+
+                    Text("This report avoids chat content and user identifiers. It includes model status, memory, thermal state, selected provider, and installed model summary.")
+                        .font(.system(size: 14, weight: .regular))
+                        .foregroundStyle(.white.opacity(0.58))
+                        .lineSpacing(4)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Text(report)
+                        .font(.system(size: 12, weight: .regular, design: .monospaced))
+                        .foregroundStyle(.white.opacity(0.68))
+                        .lineSpacing(3)
+                        .textSelection(.enabled)
+                        .padding(12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .fill(Color.white.opacity(0.045))
+                        )
+
+                    Button(action: copyDiagnostics) {
+                        Text("Copy diagnostics")
+                            .font(.system(size: 15, weight: .semibold))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 46)
+                            .background(Color.white)
+                            .foregroundStyle(Color.black)
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+}
+
 private struct LocalModelSettingsContent: View {
     let currentSettings: LocalModelSettings
     @Binding var draftSettings: LocalModelSettings
     let diagnostics: LocalModelDiagnostics
     let selectedProvider: ChatProvider
     let providerStatus: ProviderStatus
+    let appearanceMode: AppAppearanceMode
     let save: (LocalModelSettings) -> Void
     let selectProvider: (ChatProvider) -> Void
+    let updateAppearanceMode: (AppAppearanceMode) -> Void
     let validate: () -> Void
     let test: () -> Void
     let clearChatHistory: () -> Void
@@ -287,6 +476,7 @@ private struct LocalModelSettingsContent: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             providerPanel
+            appearancePanel
             presetPanel
             diagnosticsPanel
             generationPanel
@@ -294,6 +484,38 @@ private struct LocalModelSettingsContent: View {
             performancePanel
             actions
             dataPanel
+        }
+    }
+
+    private var appearancePanel: some View {
+        ModalPanel {
+            VStack(alignment: .leading, spacing: 14) {
+                SectionTitle("Appearance")
+
+                HStack(spacing: 8) {
+                    ForEach(AppAppearanceMode.allCases) { mode in
+                        Button {
+                            updateAppearanceMode(mode)
+                        } label: {
+                            Text(mode.title)
+                                .font(.system(size: 13, weight: .semibold))
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 36)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                        .fill(mode == appearanceMode ? Color.white.opacity(0.16) : Color.white.opacity(0.055))
+                                )
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("\(mode.title) appearance")
+                    }
+                }
+
+                Text("Light mode is intentionally restrained; high-contrast message bubbles and the local-model workflow stay unchanged.")
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundStyle(.white.opacity(0.45))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
 

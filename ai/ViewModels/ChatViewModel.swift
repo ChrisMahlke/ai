@@ -26,6 +26,9 @@ final class ChatViewModel: ObservableObject {
     @Published private(set) var generationMetrics = GenerationMetrics.empty
     @Published private(set) var selectedProvider: ChatProvider
     @Published private(set) var promptTemplates: [PromptTemplate]
+    @Published private(set) var activeModelProfile: LocalModelProfile
+    @Published private(set) var installedModels: [InstalledLocalModel]
+    @Published private(set) var appearanceMode: AppAppearanceMode
 
     @Published var prompt = ""
     @Published var chatSearchQuery = ""
@@ -34,6 +37,7 @@ final class ChatViewModel: ObservableObject {
     @Published var isOverflowOpen = false
     @Published var presentedOverflowItem: OverflowMenuItem?
     @Published var isPromptLibraryPresented = false
+    @Published var isOnboardingPresented: Bool
     @Published var isComposerFocused = false
     @Published var composerInputHeight: CGFloat = 20
     @Published var sharePayload: SharePayload?
@@ -44,6 +48,8 @@ final class ChatViewModel: ObservableObject {
     private let historyStore: ChatHistoryStore
     private let providerStore: ChatProviderStore
     private let promptTemplateStore: PromptTemplateStore
+    private let appearanceStore: AppAppearanceStore
+    private let onboardingStore: OnboardingStore
     private var responseTask: Task<Void, Never>?
     private var pendingHistorySaveTask: Task<Void, Never>?
     private var generationStartedAt: Date?
@@ -54,11 +60,15 @@ final class ChatViewModel: ObservableObject {
         historyStore: ChatHistoryStore? = nil,
         historyPolicy: ChatHistoryPolicy = .default,
         providerStore: ChatProviderStore? = nil,
-        promptTemplateStore: PromptTemplateStore? = nil
+        promptTemplateStore: PromptTemplateStore? = nil,
+        appearanceStore: AppAppearanceStore? = nil,
+        onboardingStore: OnboardingStore? = nil
     ) {
         let manager = LocalAIManager.shared
         let resolvedProviderStore = providerStore ?? ChatProviderStore(defaults: .standard)
         let resolvedPromptTemplateStore = promptTemplateStore ?? PromptTemplateStore()
+        let resolvedAppearanceStore = appearanceStore ?? AppAppearanceStore()
+        let resolvedOnboardingStore = onboardingStore ?? OnboardingStore()
         self.localAIManager = manager
         self.localResponder = LocalModelChatResponder(manager: manager)
         self.geminiResponder = GeminiChatResponder(configuration: .default)
@@ -66,8 +76,14 @@ final class ChatViewModel: ObservableObject {
         self.historyPolicy = historyPolicy
         self.providerStore = resolvedProviderStore
         self.promptTemplateStore = resolvedPromptTemplateStore
+        self.appearanceStore = resolvedAppearanceStore
+        self.onboardingStore = resolvedOnboardingStore
         self.selectedProvider = resolvedProviderStore.load()
         self.promptTemplates = resolvedPromptTemplateStore.load()
+        self.activeModelProfile = manager.activeModelProfile
+        self.installedModels = manager.installedModels()
+        self.appearanceMode = resolvedAppearanceStore.load()
+        self.isOnboardingPresented = !resolvedOnboardingStore.isCompleted()
         restoreHistory()
         observeLocalAIManager(manager)
         observeApplicationLifecycle()
@@ -79,10 +95,14 @@ final class ChatViewModel: ObservableObject {
         historyStore: ChatHistoryStore? = nil,
         historyPolicy: ChatHistoryPolicy = .default,
         providerStore: ChatProviderStore? = nil,
-        promptTemplateStore: PromptTemplateStore? = nil
+        promptTemplateStore: PromptTemplateStore? = nil,
+        appearanceStore: AppAppearanceStore? = nil,
+        onboardingStore: OnboardingStore? = nil
     ) {
         let resolvedProviderStore = providerStore ?? ChatProviderStore(defaults: .standard)
         let resolvedPromptTemplateStore = promptTemplateStore ?? PromptTemplateStore()
+        let resolvedAppearanceStore = appearanceStore ?? AppAppearanceStore()
+        let resolvedOnboardingStore = onboardingStore ?? OnboardingStore()
         self.localResponder = responder
         self.geminiResponder = GeminiChatResponder(configuration: .default)
         self.localAIManager = localAIManager
@@ -90,8 +110,14 @@ final class ChatViewModel: ObservableObject {
         self.historyPolicy = historyPolicy
         self.providerStore = resolvedProviderStore
         self.promptTemplateStore = resolvedPromptTemplateStore
+        self.appearanceStore = resolvedAppearanceStore
+        self.onboardingStore = resolvedOnboardingStore
         self.selectedProvider = resolvedProviderStore.load()
         self.promptTemplates = resolvedPromptTemplateStore.load()
+        self.activeModelProfile = localAIManager?.activeModelProfile ?? .smallFast
+        self.installedModels = localAIManager?.installedModels() ?? LocalModelResourceValidator().installedModels()
+        self.appearanceMode = resolvedAppearanceStore.load()
+        self.isOnboardingPresented = !resolvedOnboardingStore.isCompleted()
         restoreHistory()
         if let localAIManager {
             observeLocalAIManager(localAIManager)
@@ -159,6 +185,10 @@ final class ChatViewModel: ObservableObject {
         localAIManager?.diagnostics ?? .empty
     }
 
+    var anonymizedDiagnosticsReport: String {
+        diagnosticsReport()
+    }
+
     func loadBackendIfNeeded() async {
         guard selectedProvider == .local, let localAIManager else { return }
 
@@ -171,6 +201,34 @@ final class ChatViewModel: ObservableObject {
     func updateModelSettings(_ settings: LocalModelSettings) {
         localAIManager?.updateSettings(settings)
         setRuntimeState(.idle)
+    }
+
+    func selectModelProfile(_ profile: LocalModelProfile) {
+        guard let localAIManager else { return }
+
+        stopGeneration()
+        localAIManager.selectModelProfile(profile)
+        activeModelProfile = localAIManager.activeModelProfile
+        installedModels = localAIManager.installedModels()
+        retryLocalModelLoad()
+    }
+
+    func refreshInstalledModels() {
+        installedModels = localAIManager?.installedModels() ?? LocalModelResourceValidator().installedModels()
+    }
+
+    func updateAppearanceMode(_ mode: AppAppearanceMode) {
+        appearanceMode = mode
+        appearanceStore.save(mode)
+    }
+
+    func completeOnboarding() {
+        onboardingStore.markCompleted()
+        isOnboardingPresented = false
+    }
+
+    func copyDiagnosticsReport() {
+        UIPasteboard.general.string = diagnosticsReport()
     }
 
     func selectProvider(_ provider: ChatProvider) {
@@ -694,6 +752,8 @@ final class ChatViewModel: ObservableObject {
         manager.objectWillChange
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
+                self?.activeModelProfile = manager.activeModelProfile
+                self?.installedModels = manager.installedModels()
                 self?.objectWillChange.send()
             }
             .store(in: &cancellables)
@@ -805,5 +865,71 @@ final class ChatViewModel: ObservableObject {
         guard chatID == currentChatID else { return "" }
 
         return messages.last { $0.role == .user }?.text ?? ""
+    }
+
+    private func diagnosticsReport() -> String {
+        let diagnostics = modelDiagnostics
+        let installedSummary = installedModels
+            .map { model in
+                let size = model.fileSizeBytes > 0 ? ByteCountFormatter.string(fromByteCount: Int64(model.fileSizeBytes), countStyle: .memory) : "not installed"
+                return "- \(model.profile.title): \(size)"
+            }
+            .joined(separator: "\n")
+        let appMemory = diagnostics.appMemoryBytes.map { ByteCountFormatter.string(fromByteCount: Int64($0), countStyle: .memory) } ?? "unknown"
+        let loadTime = diagnostics.loadDuration.map { String(format: "%.1fs", $0) } ?? "n/a"
+
+        return """
+        ai diagnostics
+
+        Provider: \(selectedProvider.title)
+        Active local model: \(activeModelProfile.title)
+        Active model file: \(diagnostics.fileName)
+        Active model size: \(ByteCountFormatter.string(fromByteCount: Int64(diagnostics.fileSizeBytes), countStyle: .memory))
+        Model status: \(diagnostics.status.anonymizedDescription)
+        Device memory: \(ByteCountFormatter.string(fromByteCount: Int64(diagnostics.physicalMemoryBytes), countStyle: .memory))
+        App memory: \(appMemory)
+        Thermal state: \(diagnostics.thermalState.anonymizedDescription)
+        Load time: \(loadTime)
+        Appearance: \(appearanceMode.title)
+        Recent chats: \(recentChats.count)
+        Current messages: \(messages.count)
+
+        Installed local models:
+        \(installedSummary)
+        """
+    }
+}
+
+private extension LocalModelDiagnostics.Status {
+    var anonymizedDescription: String {
+        switch self {
+        case .notChecked:
+            return "not checked"
+        case .checking:
+            return "checking"
+        case .ready:
+            return "ready"
+        case .unavailable:
+            return "unavailable"
+        case .failed:
+            return "failed"
+        }
+    }
+}
+
+private extension ProcessInfo.ThermalState {
+    var anonymizedDescription: String {
+        switch self {
+        case .nominal:
+            return "nominal"
+        case .fair:
+            return "fair"
+        case .serious:
+            return "serious"
+        case .critical:
+            return "critical"
+        @unknown default:
+            return "unknown"
+        }
     }
 }

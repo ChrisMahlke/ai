@@ -25,28 +25,34 @@ final class LocalAIManager: ObservableObject {
     @Published private(set) var loadState: LoadState = .idle
     @Published private(set) var settings: LocalModelSettings
     @Published private(set) var diagnostics = LocalModelDiagnostics.empty
+    @Published private(set) var activeModelProfile: LocalModelProfile
 
-    private let resource: LocalModelResource
+    private var resource: LocalModelResource
     private let configuration: InferenceConfiguration
     private let engine = LlamaLocalEngine()
     private let memoryPolicy = LocalModelMemoryPolicy()
     private let resourceValidator = LocalModelResourceValidator()
     private let settingsStore: LocalModelSettingsStore
+    private let modelProfileStore: LocalModelProfileStore
     private var runtimeTelemetry = LocalModelRuntimeTelemetry.empty
     private var settingsValidation = LocalModelSettingsValidation.notChecked
     private var settingsTestResult = LocalModelSettingsTestResult.notRun
     private var notificationObservers: [NSObjectProtocol] = []
 
     init(
-        resource: LocalModelResource = .gemma3OneBInt4,
         configuration: InferenceConfiguration = .default,
-        settingsStore: LocalModelSettingsStore? = nil
+        settingsStore: LocalModelSettingsStore? = nil,
+        modelProfileStore: LocalModelProfileStore? = nil
     ) {
-        self.resource = resource
         self.configuration = configuration
         let resolvedSettingsStore = settingsStore ?? LocalModelSettingsStore()
+        let resolvedModelProfileStore = modelProfileStore ?? LocalModelProfileStore()
+        let resolvedModelProfile = resolvedModelProfileStore.load()
         self.settingsStore = resolvedSettingsStore
+        self.modelProfileStore = resolvedModelProfileStore
         self.settings = resolvedSettingsStore.load()
+        self.activeModelProfile = resolvedModelProfile
+        self.resource = resolvedModelProfile.resource
 
         notificationObservers.append(NotificationCenter.default.addObserver(
             forName: UIApplication.didReceiveMemoryWarningNotification,
@@ -117,7 +123,7 @@ final class LocalAIManager: ObservableObject {
             return
         }
 
-        updateLoading(0.42, "Loading \(configuration.localModelIdentifier)", progress)
+        updateLoading(0.42, "Loading \(activeModelProfile.title)", progress)
 
         do {
             let startedAt = Date()
@@ -186,6 +192,34 @@ final class LocalAIManager: ObservableObject {
         updatedDiagnostics.settingsValidation = settingsValidation
         updatedDiagnostics.settingsTestResult = settingsTestResult
         diagnostics = updatedDiagnostics
+    }
+
+    func installedModels() -> [InstalledLocalModel] {
+        resourceValidator.installedModels()
+    }
+
+    func selectModelProfile(_ profile: LocalModelProfile) {
+        guard profile != activeModelProfile else { return }
+
+        unloadModel(reason: "Switching local model profile to \(profile.title).")
+        activeModelProfile = profile
+        resource = profile.resource
+        modelProfileStore.save(profile)
+        settingsValidation = .notChecked
+        settingsTestResult = .notRun
+        diagnostics = LocalModelDiagnostics(
+            modelName: profile.title,
+            fileName: profile.resource.fileName,
+            fileSizeBytes: 0,
+            physicalMemoryBytes: ProcessInfo.processInfo.physicalMemory,
+            appMemoryBytes: LocalModelMemoryPolicy.currentAppMemoryFootprint(),
+            thermalState: ProcessInfo.processInfo.thermalState,
+            status: .notChecked,
+            loadDuration: nil,
+            telemetry: runtimeTelemetry,
+            settingsValidation: settingsValidation,
+            settingsTestResult: settingsTestResult
+        )
     }
 
     func unloadModel(reason: String? = nil) {
@@ -419,7 +453,7 @@ final class LocalAIManager: ObservableObject {
 
     private func diagnosticsForUnavailableModel(_ message: String) -> LocalModelDiagnostics {
         LocalModelDiagnostics(
-            modelName: configuration.localModelIdentifier,
+            modelName: activeModelProfile.title,
             fileName: resource.fileName,
             fileSizeBytes: 0,
             physicalMemoryBytes: ProcessInfo.processInfo.physicalMemory,
@@ -450,7 +484,7 @@ final class LocalAIManager: ObservableObject {
         loadDuration: TimeInterval?
     ) -> LocalModelDiagnostics {
         LocalModelDiagnostics(
-            modelName: configuration.localModelIdentifier,
+            modelName: activeModelProfile.title,
             fileName: resource.fileName,
             fileSizeBytes: snapshot.modelFileBytes,
             physicalMemoryBytes: snapshot.physicalMemoryBytes,

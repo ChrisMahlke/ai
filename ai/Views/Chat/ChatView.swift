@@ -32,7 +32,12 @@ struct ChatView: View {
                 }
 
                 if let backendNotice = viewModel.backendNotice {
-                    ModelStatusBannerView(message: backendNotice)
+                    ModelStatusBannerView(
+                        message: backendNotice,
+                        retry: viewModel.retryLocalModelLoad,
+                        useEfficient: viewModel.useEfficientModelSettings,
+                        openSettings: viewModel.openModelSettings
+                    )
                 }
 
                 ChatMessageListView(
@@ -93,6 +98,7 @@ struct ChatView: View {
                 renameChat: viewModel.renameCurrentChat,
                 archiveChat: viewModel.archiveCurrentChatAndStartNew,
                 saveModelSettings: viewModel.updateModelSettings,
+                validateModelSettings: viewModel.validateModelSettings,
                 clearChatHistory: viewModel.clearChatHistory
             )
         }

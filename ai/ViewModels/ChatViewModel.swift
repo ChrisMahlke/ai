@@ -120,6 +120,34 @@ final class ChatViewModel: ObservableObject {
         setRuntimeState(.idle)
     }
 
+    func validateModelSettings() {
+        guard let localAIManager else { return }
+
+        Task { [weak self] in
+            await localAIManager.validateSettingsAndReload { progress, message in
+                self?.setRuntimeState(.loadingModel(progress: progress, message: message))
+            }
+            self?.updateBackendNotice(from: localAIManager.loadState)
+        }
+    }
+
+    func retryLocalModelLoad() {
+        Task { [weak self] in
+            await self?.loadBackendIfNeeded()
+        }
+    }
+
+    func useEfficientModelSettings() {
+        updateModelSettings(LocalModelPreset.efficient.settings)
+        retryLocalModelLoad()
+    }
+
+    func openModelSettings() {
+        isOverflowOpen = false
+        isComposerFocused = false
+        presentedOverflowItem = .settings
+    }
+
     func openDrawer() {
         isComposerFocused = false
         isDrawerOpen = true

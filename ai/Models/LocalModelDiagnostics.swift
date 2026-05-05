@@ -25,6 +25,8 @@ struct LocalModelDiagnostics: Equatable, Sendable {
     var thermalState: ProcessInfo.ThermalState
     var status: Status
     var loadDuration: TimeInterval?
+    var telemetry: LocalModelRuntimeTelemetry
+    var settingsValidation: LocalModelSettingsValidation
 
     nonisolated static let empty = LocalModelDiagnostics(
         modelName: "Local model",
@@ -34,6 +36,8 @@ struct LocalModelDiagnostics: Equatable, Sendable {
         appMemoryBytes: nil,
         thermalState: ProcessInfo.processInfo.thermalState,
         status: .notChecked,
-        loadDuration: nil
+        loadDuration: nil,
+        telemetry: .empty,
+        settingsValidation: .notChecked
     )
 }

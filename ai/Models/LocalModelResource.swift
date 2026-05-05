@@ -11,6 +11,8 @@ struct LocalModelResource: Equatable, Sendable {
     let name: String
     let fileExtension: String
     let maxSequenceLength: Int
+    let minimumFileSizeBytes: UInt64
+    let maximumFileSizeBytes: UInt64
 
     var fileName: String {
         "\(name).\(fileExtension)"
@@ -19,6 +21,8 @@ struct LocalModelResource: Equatable, Sendable {
     nonisolated static let gemma3OneBInt4 = LocalModelResource(
         name: "google_gemma-3-1b-it-Q4_K_M",
         fileExtension: "gguf",
-        maxSequenceLength: 2048
+        maxSequenceLength: 2048,
+        minimumFileSizeBytes: 650 * 1_024 * 1_024,
+        maximumFileSizeBytes: 900 * 1_024 * 1_024
     )
 }

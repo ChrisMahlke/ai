@@ -54,12 +54,12 @@ struct LocalModelMemoryPolicy {
         return .allowed(snapshot)
     }
 
-    private static func fileSize(at url: URL) -> UInt64 {
+    static func fileSize(at url: URL) -> UInt64 {
         let values = try? url.resourceValues(forKeys: [.fileSizeKey])
         return UInt64(values?.fileSize ?? 0)
     }
 
-    private static func currentAppMemoryFootprint() -> UInt64? {
+    static func currentAppMemoryFootprint() -> UInt64? {
         var info = task_vm_info_data_t()
         var count = mach_msg_type_number_t(MemoryLayout<task_vm_info_data_t>.size / MemoryLayout<natural_t>.size)
 

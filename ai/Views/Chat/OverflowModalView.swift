@@ -17,6 +17,7 @@ struct OverflowModalView: View {
     let renameChat: (String) -> Void
     let archiveChat: () -> Void
     let saveModelSettings: (LocalModelSettings) -> Void
+    let validateModelSettings: () -> Void
     let clearChatHistory: () -> Void
 
     @State private var draftSettings: LocalModelSettings
@@ -33,6 +34,7 @@ struct OverflowModalView: View {
         renameChat: @escaping (String) -> Void,
         archiveChat: @escaping () -> Void,
         saveModelSettings: @escaping (LocalModelSettings) -> Void,
+        validateModelSettings: @escaping () -> Void,
         clearChatHistory: @escaping () -> Void
     ) {
         self.item = item
@@ -44,6 +46,7 @@ struct OverflowModalView: View {
         self.renameChat = renameChat
         self.archiveChat = archiveChat
         self.saveModelSettings = saveModelSettings
+        self.validateModelSettings = validateModelSettings
         self.clearChatHistory = clearChatHistory
         _draftSettings = State(initialValue: modelSettings)
         _draftTitle = State(initialValue: currentChatTitle == "New chat" ? "" : currentChatTitle)
@@ -72,6 +75,7 @@ struct OverflowModalView: View {
                                 draftSettings: $draftSettings,
                                 diagnostics: modelDiagnostics,
                                 save: saveModelSettings,
+                                validate: validateModelSettings,
                                 clearChatHistory: {
                                     isConfirmingHistoryClear = true
                                 }
@@ -253,6 +257,7 @@ private struct LocalModelSettingsContent: View {
     @Binding var draftSettings: LocalModelSettings
     let diagnostics: LocalModelDiagnostics
     let save: (LocalModelSettings) -> Void
+    let validate: () -> Void
     let clearChatHistory: () -> Void
 
     private var hasChanges: Bool {
@@ -326,6 +331,7 @@ private struct LocalModelSettingsContent: View {
                     DiagnosticRow(label: "File", value: diagnostics.fileName)
                     DiagnosticRow(label: "Size", value: byteString(diagnostics.fileSizeBytes))
                     DiagnosticRow(label: "Status", value: statusText)
+                    DiagnosticRow(label: "Settings", value: settingsValidationText)
                     DiagnosticRow(label: "Device memory", value: byteString(diagnostics.physicalMemoryBytes))
 
                     if let appMemoryBytes = diagnostics.appMemoryBytes {
@@ -337,8 +343,45 @@ private struct LocalModelSettingsContent: View {
                     if let loadDuration = diagnostics.loadDuration {
                         DiagnosticRow(label: "Load time", value: String(format: "%.1fs", loadDuration))
                     }
+
+                    if diagnostics.telemetry.hasValues {
+                        telemetryRows
+                    }
                 }
+
+                Button(action: validate) {
+                    Text("Validate settings")
+                        .font(.system(size: 14, weight: .semibold))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 42)
+                        .background(Color.white.opacity(0.1))
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                }
+                .buttonStyle(.plain)
             }
+        }
+    }
+
+    @ViewBuilder
+    private var telemetryRows: some View {
+        if let memoryBeforeLoad = diagnostics.telemetry.appMemoryBeforeLoadBytes {
+            DiagnosticRow(label: "Before load", value: byteString(memoryBeforeLoad))
+        }
+
+        if let memoryAfterLoad = diagnostics.telemetry.appMemoryAfterLoadBytes {
+            DiagnosticRow(label: "After load", value: byteString(memoryAfterLoad))
+        }
+
+        if let peakGenerationMemory = diagnostics.telemetry.peakGenerationMemoryBytes {
+            DiagnosticRow(label: "Peak gen", value: byteString(peakGenerationMemory))
+        }
+
+        if let memoryAfterUnload = diagnostics.telemetry.appMemoryAfterUnloadBytes {
+            DiagnosticRow(label: "After unload", value: byteString(memoryAfterUnload))
+        }
+
+        if let lastUnloadReason = diagnostics.telemetry.lastUnloadReason {
+            DiagnosticRow(label: "Last unload", value: lastUnloadReason)
         }
     }
 
@@ -513,6 +556,19 @@ private struct LocalModelSettingsContent: View {
             return "Unavailable: \(message)"
         case .failed(let message):
             return "Failed: \(message)"
+        }
+    }
+
+    private var settingsValidationText: String {
+        switch diagnostics.settingsValidation.status {
+        case .notChecked:
+            return "Not checked"
+        case .checking:
+            return "Checking"
+        case .valid:
+            return "Saved settings match backend options"
+        case .invalid(let message):
+            return message
         }
     }
 

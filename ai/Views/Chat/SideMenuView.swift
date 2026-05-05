@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct SideMenuView: View {
     let recentChats: [ChatSession]
@@ -180,15 +181,29 @@ struct SideMenuView: View {
                         .frame(width: 22)
 
                     VStack(alignment: .leading, spacing: 3) {
-                        Text(chat.title)
-                            .font(.system(size: 14, weight: .regular))
-                            .lineLimit(1)
-                            .truncationMode(.tail)
+                        if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            Text(chat.title)
+                                .font(.system(size: 14, weight: .regular))
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                        } else {
+                            Text(highlighted(chat.title))
+                                .font(.system(size: 14, weight: .regular))
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                        }
 
-                        Text(chat.updatedAt, style: .relative)
-                            .font(.system(size: 11, weight: .regular))
-                            .foregroundStyle(.white.opacity(0.34))
-                            .lineLimit(1)
+                        if let snippet = matchingSnippet(for: chat) {
+                            Text(highlighted(snippet))
+                                .font(.system(size: 11, weight: .regular))
+                                .foregroundStyle(.white.opacity(0.38))
+                                .lineLimit(1)
+                        } else {
+                            Text(chat.updatedAt, style: .relative)
+                                .font(.system(size: 11, weight: .regular))
+                                .foregroundStyle(.white.opacity(0.34))
+                                .lineLimit(1)
+                        }
                     }
 
                     Spacer()
@@ -222,5 +237,44 @@ struct SideMenuView: View {
                 Label("Delete", systemImage: "trash")
             }
         }
+    }
+
+    private func matchingSnippet(for chat: ChatSession) -> String? {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return nil }
+        guard let message = chat.messages.first(where: { $0.text.localizedCaseInsensitiveContains(query) }) else {
+            return nil
+        }
+
+        let collapsed = message.text
+            .replacingOccurrences(of: "\n", with: " ")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !collapsed.isEmpty else { return nil }
+
+        return String(collapsed.prefix(88))
+    }
+
+    private func highlighted(_ value: String) -> AttributedString {
+        let attributed = NSMutableAttributedString(string: value)
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return AttributedString(attributed) }
+
+        let nsValue = value as NSString
+        var searchRange = NSRange(location: 0, length: nsValue.length)
+
+        while searchRange.location < nsValue.length {
+            let foundRange = nsValue.range(
+                of: query,
+                options: [.caseInsensitive, .diacriticInsensitive],
+                range: searchRange
+            )
+            guard foundRange.location != NSNotFound else { break }
+
+            attributed.addAttribute(.backgroundColor, value: UIColor.white.withAlphaComponent(0.18), range: foundRange)
+            let nextLocation = foundRange.location + max(foundRange.length, 1)
+            searchRange = NSRange(location: nextLocation, length: nsValue.length - nextLocation)
+        }
+
+        return AttributedString(attributed)
     }
 }

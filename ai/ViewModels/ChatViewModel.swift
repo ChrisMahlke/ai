@@ -24,8 +24,10 @@ final class ChatViewModel: ObservableObject {
     @Published private(set) var modelLoadMessage = "Preparing local model"
     @Published private(set) var backendNotice: String?
     @Published private(set) var generationMetrics = GenerationMetrics.empty
+    @Published private(set) var selectedProvider: ChatProvider
 
     @Published var prompt = ""
+    @Published var chatSearchQuery = ""
     @Published var isDrawerOpen = false
     @Published var isOverflowOpen = false
     @Published var presentedOverflowItem: OverflowMenuItem?
@@ -33,9 +35,11 @@ final class ChatViewModel: ObservableObject {
     @Published var composerInputHeight: CGFloat = 20
     @Published var sharePayload: SharePayload?
 
-    private let responder: any ChatResponding
+    private let localResponder: any ChatResponding
+    private let geminiResponder: any ChatResponding
     private let localAIManager: LocalAIManager?
     private let historyStore: ChatHistoryStore
+    private let providerStore: ChatProviderStore
     private var responseTask: Task<Void, Never>?
     private var pendingHistorySaveTask: Task<Void, Never>?
     private var generationStartedAt: Date?
@@ -44,13 +48,18 @@ final class ChatViewModel: ObservableObject {
 
     init(
         historyStore: ChatHistoryStore? = nil,
-        historyPolicy: ChatHistoryPolicy = .default
+        historyPolicy: ChatHistoryPolicy = .default,
+        providerStore: ChatProviderStore? = nil
     ) {
         let manager = LocalAIManager.shared
+        let resolvedProviderStore = providerStore ?? ChatProviderStore(defaults: .standard)
         self.localAIManager = manager
-        self.responder = LocalModelChatResponder(manager: manager)
+        self.localResponder = LocalModelChatResponder(manager: manager)
+        self.geminiResponder = GeminiChatResponder(configuration: .default)
         self.historyStore = historyStore ?? ChatHistoryStore()
         self.historyPolicy = historyPolicy
+        self.providerStore = resolvedProviderStore
+        self.selectedProvider = resolvedProviderStore.load()
         restoreHistory()
         observeLocalAIManager(manager)
         observeApplicationLifecycle()
@@ -60,12 +69,17 @@ final class ChatViewModel: ObservableObject {
         responder: any ChatResponding,
         localAIManager: LocalAIManager? = nil,
         historyStore: ChatHistoryStore? = nil,
-        historyPolicy: ChatHistoryPolicy = .default
+        historyPolicy: ChatHistoryPolicy = .default,
+        providerStore: ChatProviderStore? = nil
     ) {
-        self.responder = responder
+        let resolvedProviderStore = providerStore ?? ChatProviderStore(defaults: .standard)
+        self.localResponder = responder
+        self.geminiResponder = GeminiChatResponder(configuration: .default)
         self.localAIManager = localAIManager
         self.historyStore = historyStore ?? ChatHistoryStore()
         self.historyPolicy = historyPolicy
+        self.providerStore = resolvedProviderStore
+        self.selectedProvider = resolvedProviderStore.load()
         restoreHistory()
         if let localAIManager {
             observeLocalAIManager(localAIManager)
@@ -98,6 +112,33 @@ final class ChatViewModel: ObservableObject {
         messages.contains { $0.role == .user }
     }
 
+    var canRegenerate: Bool {
+        !isResponseActive && messages.contains { $0.role == .user }
+    }
+
+    var chatSearchMatchCount: Int {
+        let query = chatSearchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return 0 }
+
+        return messages.reduce(0) { count, message in
+            count + message.text.localizedCaseInsensitiveMatchCount(of: query)
+        }
+    }
+
+    var providerStatus: ProviderStatus {
+        switch selectedProvider {
+        case .local:
+            return localProviderStatus
+        case .gemini:
+            return ProviderStatus(
+                provider: .gemini,
+                health: .notConfigured,
+                title: "Gemini not configured",
+                detail: "Remote SDK calls are intentionally behind the provider abstraction. Add Gemini credentials and SDK wiring before using it for production responses."
+            )
+        }
+    }
+
     var modelSettings: LocalModelSettings {
         localAIManager?.settings ?? .default
     }
@@ -107,7 +148,7 @@ final class ChatViewModel: ObservableObject {
     }
 
     func loadBackendIfNeeded() async {
-        guard let localAIManager else { return }
+        guard selectedProvider == .local, let localAIManager else { return }
 
         await localAIManager.loadModelIfNeeded { [weak self] progress, message in
             self?.setRuntimeState(.loadingModel(progress: progress, message: message))
@@ -118,6 +159,20 @@ final class ChatViewModel: ObservableObject {
     func updateModelSettings(_ settings: LocalModelSettings) {
         localAIManager?.updateSettings(settings)
         setRuntimeState(.idle)
+    }
+
+    func selectProvider(_ provider: ChatProvider) {
+        guard provider != selectedProvider else { return }
+
+        stopGeneration()
+        selectedProvider = provider
+        providerStore.save(provider)
+        backendNotice = nil
+        setRuntimeState(.idle)
+
+        if provider == .local {
+            retryLocalModelLoad()
+        }
     }
 
     func validateModelSettings() {
@@ -213,6 +268,7 @@ final class ChatViewModel: ObservableObject {
         currentChatID = UUID()
         currentTitleOverride = nil
         prompt = ""
+        chatSearchQuery = ""
         messages = []
         generationMetrics = .empty
         composerInputHeight = 20
@@ -229,6 +285,7 @@ final class ChatViewModel: ObservableObject {
             currentTitleOverride = nil
             messages = []
             prompt = ""
+            chatSearchQuery = ""
             setRuntimeState(.idle)
         }
 
@@ -242,6 +299,7 @@ final class ChatViewModel: ObservableObject {
         messages = []
         recentChats = []
         prompt = ""
+        chatSearchQuery = ""
         generationMetrics = .empty
         historyStore.clear()
         scheduleHistorySave()
@@ -256,27 +314,44 @@ final class ChatViewModel: ObservableObject {
 
     func sendCurrentPrompt() {
         let trimmedPrompt = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedPrompt.isEmpty, !isThinking else { return }
+        guard !trimmedPrompt.isEmpty, !isResponseActive else { return }
 
         isComposerFocused = false
         messages.append(ChatMessage(role: .user, text: trimmedPrompt))
         trimVisibleMessagesIfNeeded()
         prompt = ""
-        generationMetrics = GenerationMetrics.empty.starting(prompt: trimmedPrompt)
+        scheduleHistorySave()
+
+        startResponse(for: trimmedPrompt, history: messages)
+    }
+
+    func regenerateLastResponse() {
+        guard canRegenerate, let lastUserIndex = messages.lastIndex(where: { $0.role == .user }) else { return }
+
+        isComposerFocused = false
+        let lastPrompt = messages[lastUserIndex].text
+        messages = Array(messages.prefix(lastUserIndex + 1))
+        trimVisibleMessagesIfNeeded()
+        scheduleHistorySave()
+
+        startResponse(for: lastPrompt, history: messages)
+    }
+
+    private func startResponse(for prompt: String, history: [ChatMessage]) {
+        generationMetrics = GenerationMetrics.empty.starting(prompt: prompt)
         generationStartedAt = nil
         setRuntimeState(.thinking)
         backendNotice = nil
-        scheduleHistorySave()
 
         let chatID = currentChatID
-        let history = messages
+        let responder = activeResponder
 
         responseTask?.cancel()
         localAIManager?.cancelGeneration()
         responseTask = Task { [weak self, responder] in
             guard let self else { return }
 
-            let stream = await responder.responseStream(for: trimmedPrompt, history: history)
+            let stream = await responder.responseStream(for: prompt, history: history)
             let assistantID = UUID()
             var didStartResponse = false
 
@@ -327,6 +402,7 @@ final class ChatViewModel: ObservableObject {
         currentChatID = UUID()
         currentTitleOverride = nil
         prompt = ""
+        chatSearchQuery = ""
         messages = []
         setRuntimeState(.idle)
         isDrawerOpen = false
@@ -350,6 +426,7 @@ final class ChatViewModel: ObservableObject {
         currentChatID = chat.id
         currentTitleOverride = chat.title
         prompt = ""
+        chatSearchQuery = ""
         messages = chat.messages
         setRuntimeState(.idle)
         isOverflowOpen = false
@@ -359,13 +436,6 @@ final class ChatViewModel: ObservableObject {
         closeDrawer()
         generationMetrics = .empty
         scheduleHistorySave()
-    }
-
-    private func appendAssistantResponse(_ response: String, toChatID chatID: UUID) {
-        guard chatID == currentChatID else { return }
-
-        isThinking = false
-        messages.append(ChatMessage(role: .assistant, text: response))
     }
 
     private func beginAssistantResponse(id: UUID, chatID: UUID) {
@@ -422,6 +492,57 @@ final class ChatViewModel: ObservableObject {
         recentChats.insert(session, at: 0)
         if recentChats.count > historyPolicy.maxRecentChats {
             recentChats.removeLast(recentChats.count - historyPolicy.maxRecentChats)
+        }
+    }
+
+    private var activeResponder: any ChatResponding {
+        switch selectedProvider {
+        case .local:
+            return localResponder
+        case .gemini:
+            return geminiResponder
+        }
+    }
+
+    private var localProviderStatus: ProviderStatus {
+        guard let localAIManager else {
+            return ProviderStatus(
+                provider: .local,
+                health: .unknown,
+                title: "Local provider unavailable",
+                detail: "The local manager is not attached in this runtime."
+            )
+        }
+
+        switch localAIManager.loadState {
+        case .loaded:
+            return ProviderStatus(
+                provider: .local,
+                health: .ready,
+                title: "Local model ready",
+                detail: "\(modelDiagnostics.modelName) is loaded and responses stay on device."
+            )
+        case .loading(_, let message):
+            return ProviderStatus(
+                provider: .local,
+                health: .loading,
+                title: "Loading local model",
+                detail: message
+            )
+        case .unavailable(let message), .failed(let message):
+            return ProviderStatus(
+                provider: .local,
+                health: .unavailable,
+                title: "Local model unavailable",
+                detail: message
+            )
+        case .idle:
+            return ProviderStatus(
+                provider: .local,
+                health: .unknown,
+                title: "Local model idle",
+                detail: "The local provider will load the bundled model before the next response."
+            )
         }
     }
 
@@ -552,9 +673,9 @@ final class ChatViewModel: ObservableObject {
         let body = messages
             .map { message in
                 let speaker = message.role == .user ? "You" : "Assistant"
-            let suffix = message.state == .stopped ? " [stopped]" : ""
-            return "\(speaker): \(message.text)\(suffix)"
-        }
+                let suffix = message.state == .stopped ? " [stopped]" : ""
+                return "\(speaker): \(message.text)\(suffix)"
+            }
             .joined(separator: "\n\n")
 
         return "\(chatTitle)\n\n\(body)"

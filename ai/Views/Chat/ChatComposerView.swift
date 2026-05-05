@@ -17,8 +17,10 @@ struct ChatComposerView: View {
     let isGenerating: Bool
     let isResponseActive: Bool
     let generationMetrics: GenerationMetrics
+    let canRegenerate: Bool
     let send: () -> Void
     let stop: () -> Void
+    let regenerate: () -> Void
 
     var body: some View {
         VStack(spacing: 10) {
@@ -37,10 +39,27 @@ struct ChatComposerView: View {
                 .accessibilityLabel(isResponseActive ? "Stop response" : "Send message")
             }
 
-            Text(statusText)
-                .font(.system(size: 11))
-                .foregroundStyle(.white.opacity(0.38))
-                .frame(maxWidth: .infinity, alignment: .center)
+            HStack(spacing: 10) {
+                Text(statusText)
+                    .font(.system(size: 11))
+                    .foregroundStyle(.white.opacity(0.38))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+
+                if canRegenerate {
+                    Button(action: regenerate) {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 12, weight: .semibold))
+                            .frame(width: 28, height: 24)
+                            .background(Color.white.opacity(0.07))
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.white.opacity(0.52))
+                    .accessibilityLabel("Regenerate last response")
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .center)
         }
         .padding(.horizontal, 18)
         .padding(.top, 14)

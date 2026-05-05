@@ -10,6 +10,7 @@ import SwiftUI
 struct ChatMessageListView: View {
     let messages: [ChatMessage]
     let isThinking: Bool
+    let searchQuery: String
     let useSuggestion: (String) -> Void
 
     var body: some View {
@@ -21,7 +22,7 @@ struct ChatMessageListView: View {
                     }
 
                     ForEach(messages) { message in
-                        MessageRowView(message: message)
+                        MessageRowView(message: message, searchQuery: searchQuery)
                             .id(message.id)
                     }
 

@@ -13,10 +13,13 @@ struct OverflowModalView: View {
     let hasArchivableChat: Bool
     let modelSettings: LocalModelSettings
     let modelDiagnostics: LocalModelDiagnostics
+    let selectedProvider: ChatProvider
+    let providerStatus: ProviderStatus
     let close: () -> Void
     let renameChat: (String) -> Void
     let archiveChat: () -> Void
     let saveModelSettings: (LocalModelSettings) -> Void
+    let selectProvider: (ChatProvider) -> Void
     let validateModelSettings: () -> Void
     let testModelSettings: () -> Void
     let clearChatHistory: () -> Void
@@ -31,10 +34,13 @@ struct OverflowModalView: View {
         hasArchivableChat: Bool,
         modelSettings: LocalModelSettings,
         modelDiagnostics: LocalModelDiagnostics,
+        selectedProvider: ChatProvider,
+        providerStatus: ProviderStatus,
         close: @escaping () -> Void,
         renameChat: @escaping (String) -> Void,
         archiveChat: @escaping () -> Void,
         saveModelSettings: @escaping (LocalModelSettings) -> Void,
+        selectProvider: @escaping (ChatProvider) -> Void,
         validateModelSettings: @escaping () -> Void,
         testModelSettings: @escaping () -> Void,
         clearChatHistory: @escaping () -> Void
@@ -44,10 +50,13 @@ struct OverflowModalView: View {
         self.hasArchivableChat = hasArchivableChat
         self.modelSettings = modelSettings
         self.modelDiagnostics = modelDiagnostics
+        self.selectedProvider = selectedProvider
+        self.providerStatus = providerStatus
         self.close = close
         self.renameChat = renameChat
         self.archiveChat = archiveChat
         self.saveModelSettings = saveModelSettings
+        self.selectProvider = selectProvider
         self.validateModelSettings = validateModelSettings
         self.testModelSettings = testModelSettings
         self.clearChatHistory = clearChatHistory
@@ -77,7 +86,10 @@ struct OverflowModalView: View {
                                 currentSettings: modelSettings,
                                 draftSettings: $draftSettings,
                                 diagnostics: modelDiagnostics,
+                                selectedProvider: selectedProvider,
+                                providerStatus: providerStatus,
                                 save: saveModelSettings,
+                                selectProvider: selectProvider,
                                 validate: validateModelSettings,
                                 test: testModelSettings,
                                 clearChatHistory: {
@@ -260,7 +272,10 @@ private struct LocalModelSettingsContent: View {
     let currentSettings: LocalModelSettings
     @Binding var draftSettings: LocalModelSettings
     let diagnostics: LocalModelDiagnostics
+    let selectedProvider: ChatProvider
+    let providerStatus: ProviderStatus
     let save: (LocalModelSettings) -> Void
+    let selectProvider: (ChatProvider) -> Void
     let validate: () -> Void
     let test: () -> Void
     let clearChatHistory: () -> Void
@@ -271,6 +286,7 @@ private struct LocalModelSettingsContent: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
+            providerPanel
             presetPanel
             diagnosticsPanel
             generationPanel
@@ -278,6 +294,44 @@ private struct LocalModelSettingsContent: View {
             performancePanel
             actions
             dataPanel
+        }
+    }
+
+    private var providerPanel: some View {
+        ModalPanel {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack {
+                    SectionTitle("Provider")
+
+                    Spacer()
+
+                    ProviderHealthBadge(status: providerStatus)
+                }
+
+                HStack(spacing: 10) {
+                    ForEach(ChatProvider.allCases) { provider in
+                        ProviderButton(
+                            provider: provider,
+                            isSelected: provider == selectedProvider,
+                            select: {
+                                selectProvider(provider)
+                            }
+                        )
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(providerStatus.title)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.white.opacity(0.88))
+
+                    Text(providerStatus.detail)
+                        .font(.system(size: 12, weight: .regular))
+                        .foregroundStyle(.white.opacity(0.48))
+                        .lineSpacing(3)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
         }
     }
 
@@ -778,6 +832,100 @@ private struct PresetButton: View {
             )
         }
         .buttonStyle(.plain)
+    }
+}
+
+private struct ProviderButton: View {
+    let provider: ChatProvider
+    let isSelected: Bool
+    let select: () -> Void
+
+    var body: some View {
+        Button(action: select) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Image(systemName: provider.systemImage)
+                        .font(.system(size: 14, weight: .semibold))
+                        .frame(width: 24, height: 24)
+                        .background(Color.white.opacity(0.07))
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+                    Spacer()
+
+                    Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(isSelected ? .white.opacity(0.9) : .white.opacity(0.28))
+                }
+
+                Text(provider.title)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(.white.opacity(0.9))
+
+                Text(provider.subtitle)
+                    .font(.system(size: 11, weight: .regular))
+                    .foregroundStyle(.white.opacity(0.44))
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity, minHeight: 106, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(Color.white.opacity(isSelected ? 0.1 : 0.045))
+                    .stroke(Color.white.opacity(isSelected ? 0.18 : 0.07), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct ProviderHealthBadge: View {
+    let status: ProviderStatus
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Circle()
+                .fill(color)
+                .frame(width: 7, height: 7)
+
+            Text(label)
+                .font(.system(size: 11, weight: .semibold))
+        }
+        .foregroundStyle(.white.opacity(0.62))
+        .padding(.horizontal, 9)
+        .frame(height: 24)
+        .background(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(Color.white.opacity(0.07))
+        )
+    }
+
+    private var label: String {
+        switch status.health {
+        case .ready:
+            return "Ready"
+        case .loading:
+            return "Loading"
+        case .notConfigured:
+            return "Not configured"
+        case .unavailable:
+            return "Unavailable"
+        case .unknown:
+            return "Idle"
+        }
+    }
+
+    private var color: Color {
+        switch status.health {
+        case .ready:
+            return .green.opacity(0.82)
+        case .loading:
+            return .yellow.opacity(0.82)
+        case .notConfigured, .unknown:
+            return .white.opacity(0.34)
+        case .unavailable:
+            return .red.opacity(0.76)
+        }
     }
 }
 

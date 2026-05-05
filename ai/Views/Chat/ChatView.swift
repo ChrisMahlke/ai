@@ -40,9 +40,17 @@ struct ChatView: View {
                     )
                 }
 
+                if !viewModel.messages.isEmpty {
+                    ChatSearchBarView(
+                        query: $viewModel.chatSearchQuery,
+                        matchCount: viewModel.chatSearchMatchCount
+                    )
+                }
+
                 ChatMessageListView(
                     messages: viewModel.messages,
                     isThinking: viewModel.isThinking,
+                    searchQuery: viewModel.chatSearchQuery,
                     useSuggestion: viewModel.useSuggestedPrompt
                 )
 
@@ -55,8 +63,10 @@ struct ChatView: View {
                     isGenerating: viewModel.isGenerating,
                     isResponseActive: viewModel.isResponseActive,
                     generationMetrics: viewModel.generationMetrics,
+                    canRegenerate: viewModel.canRegenerate,
                     send: viewModel.sendCurrentPrompt,
-                    stop: viewModel.stopGeneration
+                    stop: viewModel.stopGeneration,
+                    regenerate: viewModel.regenerateLastResponse
                 )
             }
             .frame(maxWidth: 820)
@@ -94,10 +104,13 @@ struct ChatView: View {
                 hasArchivableChat: viewModel.hasArchivableChat,
                 modelSettings: viewModel.modelSettings,
                 modelDiagnostics: viewModel.modelDiagnostics,
+                selectedProvider: viewModel.selectedProvider,
+                providerStatus: viewModel.providerStatus,
                 close: viewModel.dismissOverflowModal,
                 renameChat: viewModel.renameCurrentChat,
                 archiveChat: viewModel.archiveCurrentChatAndStartNew,
                 saveModelSettings: viewModel.updateModelSettings,
+                selectProvider: viewModel.selectProvider,
                 validateModelSettings: viewModel.validateModelSettings,
                 testModelSettings: viewModel.testModelSettings,
                 clearChatHistory: viewModel.clearChatHistory

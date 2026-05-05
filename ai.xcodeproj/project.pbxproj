@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		F9A7C4A32FAA5600009A4F02 /* LlamaBackendKit in Frameworks */ = {isa = PBXBuildFile; productRef = F9A7C4A42FAA5600009A4F02 /* LlamaBackendKit */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		F9A7C4872FAA4713009A4F02 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F9A7C4A32FAA5600009A4F02 /* LlamaBackendKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -99,6 +104,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F9A7C49A2FAA4713009A4F02 /* Build configuration list for PBXNativeTarget "ai" */;
 			buildPhases = (
+				F9A7C4A72FAA6200009A4F02 /* Validate Local Model Resources */,
 				F9A7C4732FAA4712009A4F02 /* Sources */,
 				F9A7C4742FAA4712009A4F02 /* Frameworks */,
 				F9A7C4752FAA4712009A4F02 /* Resources */,
@@ -112,6 +118,7 @@
 			);
 			name = ai;
 			packageProductDependencies = (
+				F9A7C4A42FAA5600009A4F02 /* LlamaBackendKit */,
 			);
 			productName = ai;
 			productReference = F9A7C4772FAA4712009A4F02 /* ai.app */;
@@ -195,6 +202,9 @@
 			);
 			mainGroup = F9A7C46E2FAA4712009A4F02;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				F9A7C4A52FAA5600009A4F02 /* XCLocalSwiftPackageReference "Packages/LlamaBackend" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F9A7C4782FAA4712009A4F02 /* Products */;
 			projectDirPath = "";
@@ -230,6 +240,29 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		F9A7C4A72FAA6200009A4F02 /* Validate Local Model Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/ai/Models",
+			);
+			name = "Validate Local Model Resources";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -eu\n\nMODEL_DIR=\"${SRCROOT}/ai/Models\"\nEXPECTED_MODEL=\"${MODEL_DIR}/google_gemma-3-1b-it-Q4_K_M.gguf\"\n\nif [ ! -f \"${EXPECTED_MODEL}\" ]; then\n  echo \"error: Missing expected GGUF model: ${EXPECTED_MODEL}\" >&2\n  exit 1\nfi\n\nGGUF_COUNT=$(find \"${MODEL_DIR}\" -maxdepth 1 -type f -name '*.gguf' | wc -l | tr -d ' ')\nif [ \"${GGUF_COUNT}\" != \"1\" ]; then\n  echo \"error: Expected exactly one GGUF model in ${MODEL_DIR}; found ${GGUF_COUNT}.\" >&2\n  exit 1\nfi\n\nif [ -d \"${MODEL_DIR}/.cache\" ]; then\n  CACHE_FILES=$(find \"${MODEL_DIR}/.cache\" -type f | wc -l | tr -d ' ')\n  if [ \"${CACHE_FILES}\" != \"0\" ]; then\n    echo \"error: Remove Hugging Face cache files from ${MODEL_DIR}/.cache before building.\" >&2\n    exit 1\n  fi\nfi\n\nEXTRA_METADATA=$(find \"${MODEL_DIR}\" -type f \\( -name '*.lock' -o -name '*.metadata' \\) | wc -l | tr -d ' ')\nif [ \"${EXTRA_METADATA}\" != \"0\" ]; then\n  echo \"error: Model cache metadata files should not be bundled.\" >&2\n  exit 1\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		F9A7C4732FAA4712009A4F02 /* Sources */ = {
@@ -578,6 +611,21 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		F9A7C4A52FAA5600009A4F02 /* XCLocalSwiftPackageReference "Packages/LlamaBackend" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/LlamaBackend;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F9A7C4A42FAA5600009A4F02 /* LlamaBackendKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F9A7C4A52FAA5600009A4F02 /* XCLocalSwiftPackageReference "Packages/LlamaBackend" */;
+			productName = LlamaBackendKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = F9A7C46F2FAA4712009A4F02 /* Project object */;
 }

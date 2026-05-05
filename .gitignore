@@ -1,0 +1,72 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+
+# Xcode
+DerivedData/
+build/
+Build/
+*.xcuserstate
+*.xccheckout
+*.moved-aside
+*.xcscmblueprint
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+*.app
+*.xcarchive
+*.result
+*.xcresult
+*.playgroundtimeline
+timeline.xctimeline
+playground.xcworkspace/
+xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Packages/.build/
+.package.resolved
+Package.resolved
+
+# Local model weights and generated model artifacts
+*.gguf
+*.bin
+*.safetensors
+*.onnx
+*.mlmodelc/
+*.litertlm
+*.metadata
+*.lock
+CACHEDIR.TAG
+ai/Models/.cache/
+
+# Editor and local environment state
+.vscode/
+.idea/
+AGENT.md
+*.swp
+*.swo
+*.tmp
+*.log
+.env
+.env.*
+
+# Test and coverage output
+coverage/
+*.profdata
+*.profraw
+
+# Fastlane and deployment secrets
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output/
+*.mobileprovision
+*.cer
+*.p12

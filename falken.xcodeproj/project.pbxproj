@@ -244,7 +244,6 @@
 /* Begin PBXShellScriptBuildPhase section */
 		F9A7C4A72FAA6200009A4F02 /* Validate Local Model Resources */ = {
 			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -257,10 +256,11 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/validate-local-model-resources.stamp",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -eu\n\nMODEL_DIR=\"${SRCROOT}/falken/Models\"\nEXPECTED_MODEL=\"${MODEL_DIR}/google_gemma-3-1b-it-Q4_K_M.gguf\"\n\nif [ ! -f \"${EXPECTED_MODEL}\" ]; then\n  echo \"error: Missing expected GGUF model: ${EXPECTED_MODEL}\" >&2\n  exit 1\nfi\n\nGGUF_COUNT=$(find \"${MODEL_DIR}\" -maxdepth 1 -type f -name '*.gguf' | wc -l | tr -d ' ')\nif [ \"${GGUF_COUNT}\" != \"1\" ]; then\n  echo \"error: Expected exactly one GGUF model in ${MODEL_DIR}; found ${GGUF_COUNT}.\" >&2\n  exit 1\nfi\n\nif [ -d \"${MODEL_DIR}/.cache\" ]; then\n  CACHE_FILES=$(find \"${MODEL_DIR}/.cache\" -type f | wc -l | tr -d ' ')\n  if [ \"${CACHE_FILES}\" != \"0\" ]; then\n    echo \"error: Remove Hugging Face cache files from ${MODEL_DIR}/.cache before building.\" >&2\n    exit 1\n  fi\nfi\n\nEXTRA_METADATA=$(find \"${MODEL_DIR}\" -type f \\( -name '*.lock' -o -name '*.metadata' \\) | wc -l | tr -d ' ')\nif [ \"${EXTRA_METADATA}\" != \"0\" ]; then\n  echo \"error: Model cache metadata files should not be bundled.\" >&2\n  exit 1\nfi\n";
+			shellScript = "set -eu\n\nMODEL_DIR=\"${SRCROOT}/falken/Models\"\nEXPECTED_MODEL=\"${MODEL_DIR}/google_gemma-3-1b-it-Q4_K_M.gguf\"\nSTAMP_FILE=\"${DERIVED_FILE_DIR}/validate-local-model-resources.stamp\"\n\nif [ ! -f \"${EXPECTED_MODEL}\" ]; then\n  echo \"error: Missing expected GGUF model: ${EXPECTED_MODEL}\" >&2\n  exit 1\nfi\n\nGGUF_COUNT=$(find \"${MODEL_DIR}\" -maxdepth 1 -type f -name '*.gguf' | wc -l | tr -d ' ')\nif [ \"${GGUF_COUNT}\" != \"1\" ]; then\n  echo \"error: Expected exactly one GGUF model in ${MODEL_DIR}; found ${GGUF_COUNT}.\" >&2\n  exit 1\nfi\n\nif [ -d \"${MODEL_DIR}/.cache\" ]; then\n  CACHE_FILES=$(find \"${MODEL_DIR}/.cache\" -type f 2>/dev/null | wc -l | tr -d ' ')\n  if [ \"${CACHE_FILES}\" != \"0\" ]; then\n    echo \"error: Remove Hugging Face cache files from ${MODEL_DIR}/.cache before building.\" >&2\n    exit 1\n  fi\nfi\n\nEXTRA_METADATA=$(find \"${MODEL_DIR}\" -maxdepth 1 -type f \\( -name '*.lock' -o -name '*.metadata' \\) | wc -l | tr -d ' ')\nif [ \"${EXTRA_METADATA}\" != \"0\" ]; then\n  echo \"error: Model cache metadata files should not be bundled.\" >&2\n  exit 1\nfi\n\ntouch \"${STAMP_FILE}\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -361,6 +361,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -418,6 +419,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -447,6 +449,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = io.chrismahlke.falken;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -480,6 +483,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = io.chrismahlke.falken;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -502,6 +506,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = io.chrismahlke.falkenTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
@@ -524,6 +529,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = io.chrismahlke.falkenTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
@@ -544,6 +550,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = io.chrismahlke.falkenUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
@@ -564,6 +571,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = io.chrismahlke.falkenUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;

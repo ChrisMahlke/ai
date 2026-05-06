@@ -10,7 +10,7 @@ import SwiftUI
 struct ChatComposerView: View {
     @Binding var prompt: String
     @Binding var isFocused: Bool
-    @Binding var inputHeight: CGFloat
+    @FocusState private var textFieldFocused: Bool
 
     let canSend: Bool
     let isThinking: Bool
@@ -71,6 +71,14 @@ struct ChatComposerView: View {
                 .fill(AppTheme.background)
                 .shadow(color: AppTheme.composerShadow, radius: 16, y: -8)
         )
+        .onChange(of: isFocused) { _, newValue in
+            textFieldFocused = newValue
+        }
+        .onChange(of: textFieldFocused) { _, newValue in
+            guard isFocused != newValue else { return }
+
+            isFocused = newValue
+        }
     }
 
     private var buttonBackground: Color {
@@ -112,23 +120,14 @@ struct ChatComposerView: View {
     }
 
     private var inputBox: some View {
-        ZStack(alignment: .leading) {
-            if prompt.isEmpty {
-                Text("Message")
-                    .font(.system(size: 16, weight: .regular))
-                    .foregroundStyle(AppTheme.foreground.opacity(0.42))
-                    .allowsHitTesting(false)
-            }
-
-            ComposerTextView(
-                text: $prompt,
-                isFocused: $isFocused,
-                measuredHeight: $inputHeight,
-                isEnabled: !isThinking,
-                onSubmit: send
-            )
-            .frame(height: inputHeight)
-        }
+        TextField("Message", text: $prompt, axis: .vertical)
+            .font(.system(size: 16, weight: .regular))
+            .foregroundStyle(AppTheme.foreground)
+            .focused($textFieldFocused)
+            .disabled(isThinking)
+            .lineLimit(1...4)
+            .submitLabel(.send)
+            .onSubmit(send)
         .padding(.horizontal, 16)
         .padding(.vertical, 13)
         .background(

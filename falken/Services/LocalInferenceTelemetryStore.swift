@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct LocalInferenceTelemetryStore {
+nonisolated struct LocalInferenceTelemetryStore {
     private let key = "localInferenceTelemetry.v1"
     private let defaults: UserDefaults
 

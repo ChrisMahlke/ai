@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct LocalModelRegistry {
+nonisolated struct LocalModelRegistry {
     nonisolated static let `default` = LocalModelRegistry()
 
     let descriptors: [LocalModelDescriptor]

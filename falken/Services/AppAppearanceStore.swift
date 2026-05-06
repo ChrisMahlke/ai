@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct AppAppearanceStore {
+nonisolated struct AppAppearanceStore {
     private let defaults: UserDefaults
     private let key = "appAppearanceMode.v1"
 

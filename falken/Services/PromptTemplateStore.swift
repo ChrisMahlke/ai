@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct PromptTemplateStore {
+nonisolated struct PromptTemplateStore {
     private let fileURL: URL
 
     nonisolated init(fileManager: FileManager = .default) {

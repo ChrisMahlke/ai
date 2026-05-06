@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct OnboardingStore {
+nonisolated struct OnboardingStore {
     private let defaults: UserDefaults
     private let key = "onboardingCompleted.v1"
 

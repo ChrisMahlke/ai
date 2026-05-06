@@ -69,7 +69,7 @@ struct ChatView: View {
         }
         .animation(.spring(response: reduceMotion ? 0.01 : 0.34, dampingFraction: 0.86), value: viewModel.isDrawerOpen)
         .animation(.spring(response: reduceMotion ? 0.01 : 0.34, dampingFraction: 0.86), value: viewModel.isSidebarCollapsed)
-        .fullScreenCover(item: deferredPresentedOverflowItem) { item in
+        .fullScreenCover(item: $viewModel.presentedOverflowItem) { item in
             OverflowModalView(
                 item: item,
                 currentChatTitle: viewModel.chatTitle,
@@ -95,7 +95,7 @@ struct ChatView: View {
                 clearChatHistory: viewModel.clearChatHistory
             )
         }
-        .fullScreenCover(isPresented: deferredPromptLibraryPresentation) {
+        .fullScreenCover(isPresented: $viewModel.isPromptLibraryPresented) {
             PromptLibraryView(
                 templates: viewModel.promptTemplates,
                 close: viewModel.dismissPromptLibrary,
@@ -105,10 +105,10 @@ struct ChatView: View {
             )
             .preferredColorScheme(viewModel.appearanceMode.colorScheme)
         }
-        .sheet(item: deferredSharePayload) { payload in
+        .sheet(item: $viewModel.sharePayload) { payload in
             ShareSheet(items: [payload.text])
         }
-        .fullScreenCover(isPresented: deferredOnboardingPresentation) {
+        .fullScreenCover(isPresented: $viewModel.isOnboardingPresented) {
             OnboardingView(
                 readinessReport: viewModel.readinessReport,
                 complete: viewModel.completeOnboarding
@@ -120,54 +120,6 @@ struct ChatView: View {
 
     private var usesPersistentSidebar: Bool {
         horizontalSizeClass == .regular
-    }
-
-    private var deferredPresentedOverflowItem: Binding<OverflowMenuItem?> {
-        Binding(
-            get: { viewModel.presentedOverflowItem },
-            set: { item in
-                Task { @MainActor in
-                    await Task.yield()
-                    viewModel.presentedOverflowItem = item
-                }
-            }
-        )
-    }
-
-    private var deferredPromptLibraryPresentation: Binding<Bool> {
-        Binding(
-            get: { viewModel.isPromptLibraryPresented },
-            set: { isPresented in
-                Task { @MainActor in
-                    await Task.yield()
-                    viewModel.isPromptLibraryPresented = isPresented
-                }
-            }
-        )
-    }
-
-    private var deferredSharePayload: Binding<SharePayload?> {
-        Binding(
-            get: { viewModel.sharePayload },
-            set: { payload in
-                Task { @MainActor in
-                    await Task.yield()
-                    viewModel.sharePayload = payload
-                }
-            }
-        )
-    }
-
-    private var deferredOnboardingPresentation: Binding<Bool> {
-        Binding(
-            get: { viewModel.isOnboardingPresented },
-            set: { isPresented in
-                Task { @MainActor in
-                    await Task.yield()
-                    viewModel.isOnboardingPresented = isPresented
-                }
-            }
-        )
     }
 
     private var chatSurface: some View {
@@ -226,7 +178,6 @@ struct ChatView: View {
             ChatComposerView(
                 prompt: $viewModel.prompt,
                 isFocused: $viewModel.isComposerFocused,
-                inputHeight: $viewModel.composerInputHeight,
                 canSend: viewModel.canSend,
                 isThinking: viewModel.isThinking,
                 isGenerating: viewModel.isGenerating,

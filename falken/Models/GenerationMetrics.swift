@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct GenerationMetrics: Equatable, Sendable {
+nonisolated struct GenerationMetrics: Equatable, Sendable {
     static let empty = GenerationMetrics(
         tokenChunks: 0,
         elapsedSeconds: 0,

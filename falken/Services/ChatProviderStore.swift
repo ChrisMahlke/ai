@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ChatProviderStore {
+nonisolated struct ChatProviderStore {
     private let defaults: UserDefaults
     private let key = "chatProvider.v1"
 

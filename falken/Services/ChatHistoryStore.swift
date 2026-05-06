@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ChatHistoryStore {
+nonisolated struct ChatHistoryStore {
     private let fileURL: URL
 
     nonisolated init(fileManager: FileManager = .default) {

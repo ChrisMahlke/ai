@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct LocalModelProfileStore {
+nonisolated struct LocalModelProfileStore {
     private let defaults: UserDefaults
     private let key = "localModelProfile.v1"
 

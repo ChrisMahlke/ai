@@ -11,11 +11,11 @@ struct AppAppearanceStore {
     private let defaults: UserDefaults
     private let key = "appAppearanceMode.v1"
 
-    init(defaults: UserDefaults = .standard) {
+    nonisolated init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
     }
 
-    func load() -> AppAppearanceMode {
+    nonisolated func load() -> AppAppearanceMode {
         guard let rawValue = defaults.string(forKey: key),
               let mode = AppAppearanceMode(rawValue: rawValue)
         else {
@@ -25,7 +25,7 @@ struct AppAppearanceStore {
         return mode
     }
 
-    func save(_ mode: AppAppearanceMode) {
+    nonisolated func save(_ mode: AppAppearanceMode) {
         defaults.set(mode.rawValue, forKey: key)
     }
 }

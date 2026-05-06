@@ -14,21 +14,32 @@ extension ChatViewModel {
         manager.$loadState
             .receive(on: RunLoop.main)
             .sink { [weak self] loadState in
-                switch loadState {
-                case .unavailable, .failed:
+                Task { @MainActor [weak self] in
+                    await Task.yield()
                     self?.updateBackendNotice(from: loadState)
-                case .idle, .loading, .loaded:
-                    break
                 }
             }
             .store(in: &cancellables)
 
-        manager.objectWillChange
+        manager.$activeModelProfile
+            .removeDuplicates()
             .receive(on: RunLoop.main)
-            .sink { [weak self] _ in
-                self?.activeModelProfile = manager.activeModelProfile
-                self?.installedModels = manager.installedModels()
-                self?.objectWillChange.send()
+            .sink { [weak self] activeModelProfile in
+                guard let self else { return }
+
+                Task { @MainActor [weak self] in
+                    await Task.yield()
+                    guard let self else { return }
+
+                    if self.activeModelProfile != activeModelProfile {
+                        self.activeModelProfile = activeModelProfile
+                    }
+
+                    let installedModels = manager.installedModels()
+                    if self.installedModels != installedModels {
+                        self.installedModels = installedModels
+                    }
+                }
             }
             .store(in: &cancellables)
     }

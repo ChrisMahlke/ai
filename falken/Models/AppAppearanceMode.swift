@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-enum AppAppearanceMode: String, CaseIterable, Codable, Identifiable, Sendable {
+nonisolated enum AppAppearanceMode: String, CaseIterable, Codable, Identifiable, Sendable {
     case system
     case dark
     case light

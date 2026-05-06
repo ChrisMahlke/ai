@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct LocalModelSettings: Codable, Equatable, Sendable {
+nonisolated struct LocalModelSettings: Codable, Equatable, Sendable {
     var contextTokenLimit: Int
     var outputTokenLimit: Int
     var gpuLayerCount: Int

@@ -10,14 +10,14 @@ import Foundation
 struct PromptTemplateStore {
     private let fileURL: URL
 
-    init(fileManager: FileManager = .default) {
+    nonisolated init(fileManager: FileManager = .default) {
         let supportDirectory = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         let appDirectory = supportDirectory.appendingPathComponent("falken", isDirectory: true)
         try? fileManager.createDirectory(at: appDirectory, withIntermediateDirectories: true)
         self.fileURL = appDirectory.appendingPathComponent("prompt-templates.json")
     }
 
-    func load() -> [PromptTemplate] {
+    nonisolated func load() -> [PromptTemplate] {
         guard let data = try? Data(contentsOf: fileURL),
               let savedTemplates = try? JSONDecoder().decode([PromptTemplate].self, from: data)
         else {
@@ -29,7 +29,7 @@ struct PromptTemplateStore {
         return PromptTemplate.builtIns + customTemplates.sorted { $0.createdAt > $1.createdAt }
     }
 
-    func save(_ templates: [PromptTemplate]) {
+    nonisolated func save(_ templates: [PromptTemplate]) {
         let customTemplates = templates.filter { !$0.isBuiltIn }
         guard let data = try? JSONEncoder().encode(customTemplates) else { return }
 

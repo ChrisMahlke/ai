@@ -11,11 +11,11 @@ struct LocalModelProfileStore {
     private let defaults: UserDefaults
     private let key = "localModelProfile.v1"
 
-    init(defaults: UserDefaults = .standard) {
+    nonisolated init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
     }
 
-    func load() -> LocalModelProfile {
+    nonisolated func load() -> LocalModelProfile {
         guard let rawValue = defaults.string(forKey: key),
               let profile = LocalModelProfile(rawValue: rawValue)
         else {
@@ -25,7 +25,7 @@ struct LocalModelProfileStore {
         return profile
     }
 
-    func save(_ profile: LocalModelProfile) {
+    nonisolated func save(_ profile: LocalModelProfile) {
         defaults.set(profile.rawValue, forKey: key)
     }
 }

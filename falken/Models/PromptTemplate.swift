@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct PromptTemplate: Identifiable, Equatable, Codable, Sendable {
+nonisolated struct PromptTemplate: Identifiable, Equatable, Codable, Sendable {
     let id: UUID
     var title: String
     var text: String

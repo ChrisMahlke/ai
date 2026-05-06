@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum LocalModelProfile: String, CaseIterable, Codable, Identifiable, Sendable {
+nonisolated enum LocalModelProfile: String, CaseIterable, Codable, Identifiable, Sendable {
     case smallFast
     case betterQuality
 

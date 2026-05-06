@@ -45,6 +45,10 @@ struct ComposerTextView: UIViewRepresentable {
 
     func updateUIView(_ textView: UITextView, context: Context) {
         context.coordinator.parent = self
+        context.coordinator.isSynchronizingFromSwiftUI = true
+        defer {
+            context.coordinator.isSynchronizingFromSwiftUI = false
+        }
 
         if textView.text != text {
             textView.text = text
@@ -73,21 +77,22 @@ struct ComposerTextView: UIViewRepresentable {
 
     final class Coordinator: NSObject, UITextViewDelegate {
         var parent: ComposerTextView
+        var isSynchronizingFromSwiftUI = false
 
         init(parent: ComposerTextView) {
             self.parent = parent
         }
 
         func textViewDidBeginEditing(_ textView: UITextView) {
-            parent.isFocused = true
+            setFocused(true)
         }
 
         func textViewDidEndEditing(_ textView: UITextView) {
-            parent.isFocused = false
+            setFocused(false)
         }
 
         func textViewDidChange(_ textView: UITextView) {
-            parent.text = textView.text
+            setText(textView.text)
             recalculateHeight(for: textView)
         }
 
@@ -97,7 +102,7 @@ struct ComposerTextView: UIViewRepresentable {
             replacementText replacement: String
         ) -> Bool {
             guard replacement == "\n" else { return true }
-            parent.isFocused = false
+            setFocused(false)
             textView.resignFirstResponder()
             parent.onSubmit()
             return false
@@ -111,7 +116,31 @@ struct ComposerTextView: UIViewRepresentable {
 
             guard abs(parent.measuredHeight - clampedHeight) > 0.5 else { return }
             DispatchQueue.main.async {
+                guard abs(self.parent.measuredHeight - clampedHeight) > 0.5 else { return }
+
                 self.parent.measuredHeight = clampedHeight
+            }
+        }
+
+        private func setText(_ text: String) {
+            guard !isSynchronizingFromSwiftUI else { return }
+            guard parent.text != text else { return }
+
+            DispatchQueue.main.async {
+                guard self.parent.text != text else { return }
+
+                self.parent.text = text
+            }
+        }
+
+        private func setFocused(_ isFocused: Bool) {
+            guard !isSynchronizingFromSwiftUI else { return }
+            guard parent.isFocused != isFocused else { return }
+
+            DispatchQueue.main.async {
+                guard self.parent.isFocused != isFocused else { return }
+
+                self.parent.isFocused = isFocused
             }
         }
     }

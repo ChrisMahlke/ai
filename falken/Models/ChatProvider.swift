@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum ChatProvider: String, CaseIterable, Codable, Identifiable, Sendable {
+nonisolated enum ChatProvider: String, CaseIterable, Codable, Identifiable, Sendable {
     case local
     case gemini
 

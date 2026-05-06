@@ -11,11 +11,11 @@ struct LocalModelSettingsStore {
     private let key = "localModelSettings.v1"
     private let defaults: UserDefaults
 
-    init(defaults: UserDefaults = .standard) {
+    nonisolated init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
     }
 
-    func load() -> LocalModelSettings {
+    nonisolated func load() -> LocalModelSettings {
         guard let data = defaults.data(forKey: key),
               let settings = try? JSONDecoder().decode(LocalModelSettings.self, from: data) else {
             return .default
@@ -24,7 +24,7 @@ struct LocalModelSettingsStore {
         return settings.clamped
     }
 
-    func save(_ settings: LocalModelSettings) {
+    nonisolated func save(_ settings: LocalModelSettings) {
         guard let data = try? JSONEncoder().encode(settings.clamped) else {
             return
         }

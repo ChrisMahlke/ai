@@ -11,11 +11,11 @@ struct ChatProviderStore {
     private let defaults: UserDefaults
     private let key = "chatProvider.v1"
 
-    init(defaults: UserDefaults) {
+    nonisolated init(defaults: UserDefaults) {
         self.defaults = defaults
     }
 
-    func load() -> ChatProvider {
+    nonisolated func load() -> ChatProvider {
         guard
             let rawValue = defaults.string(forKey: key),
             let provider = ChatProvider(rawValue: rawValue)
@@ -26,7 +26,7 @@ struct ChatProviderStore {
         return provider
     }
 
-    func save(_ provider: ChatProvider) {
+    nonisolated func save(_ provider: ChatProvider) {
         defaults.set(provider.rawValue, forKey: key)
     }
 }

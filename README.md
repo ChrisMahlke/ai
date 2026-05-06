@@ -28,8 +28,11 @@ Important runtime components:
 
 - Xcode with iOS SDK support.
 - iOS 17 or newer for the local backend package.
-- A physical iPhone or iPad is recommended for local model testing.
+- A physical iPhone or iPad that you can build and deploy to from Xcode.
+- An Apple developer account or local signing setup that allows installing development builds on your own device.
 - The quantized GGUF model file must be installed locally before building/running with offline inference.
+
+`falken` is intended to be built locally and installed directly on your own iPhone or iPad. Add the model file to the project before building, select your personal development team in Xcode signing settings, connect the target device, and deploy the `falken` scheme to that device.
 
 The expected model resource is:
 
@@ -66,7 +69,9 @@ The app also includes:
 
 ## Build
 
-Open `falken.xcodeproj`, select the `falken` scheme, and build for a physical iOS device.
+Open `falken.xcodeproj`, select the `falken` scheme, choose your connected iPhone or iPad as the run destination, confirm signing is configured for your team, and build/run the app on that device.
+
+The app expects the local model to be present at build time. If the model is missing, the app can still launch, but local inference will report that the model is unavailable until the correct GGUF file is added to `falken/Models`, included in the `falken` target membership, and rebuilt.
 
 Command-line build used during development:
 
@@ -90,7 +95,7 @@ The current implementation was build-tested with:
 - Local `LlamaBackend` Swift Package resolution.
 - Bundled resource validation confirming only `google_gemma-3-1b-it-Q4_K_M.gguf` is present among model/cache-sensitive files.
 
-Runtime behavior should still be validated on the target physical device, especially after changing model settings, because local inference performance and memory pressure depend on device RAM, thermal state, and the exact model file.
+Runtime behavior should still be validated on the physical device where the app will be used, especially after changing model settings, because local inference performance and memory pressure depend on device RAM, thermal state, and the exact model file.
 
 ## Repository Hygiene
 

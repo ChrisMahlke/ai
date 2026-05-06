@@ -20,18 +20,12 @@ struct OnboardingView: View {
                 VStack(alignment: .leading, spacing: 22) {
                     Spacer(minLength: 12)
 
-                    VStack(alignment: .leading, spacing: 10) {
+                    VStack(alignment: .leading, spacing: 8) {
                         Text(AppBrand.spacedName)
                             .font(.system(size: 42, weight: .semibold, design: .rounded))
                             .textCase(.lowercase)
 
-                        Text(AppBrand.tagline)
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(AppTheme.foreground.opacity(0.52))
-                            .lineSpacing(3)
-                            .fixedSize(horizontal: false, vertical: true)
-
-                        Text("Private, local-first chat on iPhone and iPad.")
+                        Text("Local chat readiness")
                             .font(.system(size: 20, weight: .medium))
                             .foregroundStyle(AppTheme.foreground.opacity(0.82))
                             .fixedSize(horizontal: false, vertical: true)
@@ -48,7 +42,7 @@ struct OnboardingView: View {
                         }
                     }
 
-                    Text(readinessReport.hasBlockingIssue ? "You can continue, but local inference will stay unavailable until blocked checks are fixed and the app is rebuilt." : "This device is ready for local inference.")
+                    Text(readinessReport.hasBlockingIssue ? "Blocked items can be fixed from Models or Xcode, then rebuilt." : "Ready for private local replies.")
                         .font(.system(size: 13, weight: .regular))
                         .foregroundStyle(AppTheme.foreground.opacity(0.52))
                         .lineSpacing(3)
@@ -57,7 +51,7 @@ struct OnboardingView: View {
                     Spacer(minLength: 14)
 
                     Button(action: complete) {
-                        Text(readinessReport.hasBlockingIssue ? "Continue Anyway" : "Continue")
+                        Text(readinessReport.hasBlockingIssue ? "Open Chat" : "Start Chat")
                             .font(.system(size: 16, weight: .semibold))
                             .frame(maxWidth: .infinity)
                             .frame(height: 50)
@@ -86,8 +80,20 @@ struct OnboardingView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(check.title)
-                    .font(.system(size: 15, weight: .semibold))
+                HStack(spacing: 8) {
+                    Text(check.title)
+                        .font(.system(size: 15, weight: .semibold))
+
+                    Spacer(minLength: 8)
+
+                    Text(statusTitle(check.status))
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(statusColor(check.status))
+                        .padding(.horizontal, 7)
+                        .frame(height: 20)
+                        .background(statusColor(check.status).opacity(0.12))
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                }
 
                 Text(check.detail)
                     .font(.system(size: 13, weight: .regular))
@@ -106,6 +112,17 @@ struct OnboardingView: View {
             return .yellow.opacity(0.82)
         case .blocked:
             return .red.opacity(0.76)
+        }
+    }
+
+    private func statusTitle(_ status: OnDeviceReadinessReport.Check.Status) -> String {
+        switch status {
+        case .ready:
+            return "Ready"
+        case .warning:
+            return "Review"
+        case .blocked:
+            return "Fix"
         }
     }
 }

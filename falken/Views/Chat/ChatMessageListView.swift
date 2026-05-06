@@ -12,6 +12,7 @@ struct ChatMessageListView: View {
     let messages: [ChatMessage]
     let isThinking: Bool
     let searchQuery: String
+    let activeSearchMessageID: UUID?
     let useSuggestion: (String) -> Void
     let editMessage: (ChatMessage) -> Void
     let deleteMessage: (ChatMessage) -> Void
@@ -29,6 +30,7 @@ struct ChatMessageListView: View {
                         MessageRowView(
                             message: message,
                             searchQuery: searchQuery,
+                            isActiveSearchResult: message.id == activeSearchMessageID,
                             canContinueFromHere: message.id != messages.last?.id,
                             editMessage: editMessage,
                             deleteMessage: deleteMessage,
@@ -56,6 +58,13 @@ struct ChatMessageListView: View {
             }
             .onChange(of: isThinking) { _, _ in
                 scrollToBottom(with: proxy)
+            }
+            .onChange(of: activeSearchMessageID) { _, messageID in
+                guard let messageID else { return }
+
+                withAnimation(.easeOut(duration: UIAccessibility.isReduceMotionEnabled ? 0.01 : 0.2)) {
+                    proxy.scrollTo(messageID, anchor: .center)
+                }
             }
         }
     }

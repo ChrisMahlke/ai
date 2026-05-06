@@ -11,6 +11,7 @@ import UIKit
 struct MessageRowView: View {
     let message: ChatMessage
     let searchQuery: String
+    let isActiveSearchResult: Bool
     let canContinueFromHere: Bool
     let editMessage: (ChatMessage) -> Void
     let deleteMessage: (ChatMessage) -> Void
@@ -98,6 +99,14 @@ struct MessageRowView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: isUser ? .trailing : .leading)
+            .padding(isActiveSearchResult ? 8 : 0)
+            .background {
+                if isActiveSearchResult {
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(AppTheme.foreground.opacity(0.045))
+                        .stroke(AppTheme.primaryAction.opacity(0.34), lineWidth: 1)
+                }
+            }
 
             if !isUser {
                 Spacer(minLength: 44)

@@ -29,6 +29,7 @@ extension ChatViewModel {
         currentTitleOverride = nil
         prompt = ""
         chatSearchQuery = ""
+        chatSearchActiveMessageID = nil
         messages = []
         generationMetrics = .empty
         composerInputHeight = 20
@@ -46,6 +47,7 @@ extension ChatViewModel {
             messages = []
             prompt = ""
             chatSearchQuery = ""
+            chatSearchActiveMessageID = nil
             setRuntimeState(.idle)
         }
 
@@ -68,6 +70,7 @@ extension ChatViewModel {
         recentChats = []
         prompt = ""
         chatSearchQuery = ""
+        chatSearchActiveMessageID = nil
         generationMetrics = .empty
         historyPersistence.clear()
         scheduleHistorySave()
@@ -82,6 +85,7 @@ extension ChatViewModel {
         currentTitleOverride = nil
         prompt = ""
         chatSearchQuery = ""
+        chatSearchActiveMessageID = nil
         messages = []
         setRuntimeState(.idle)
         isDrawerOpen = false
@@ -107,6 +111,7 @@ extension ChatViewModel {
         currentTitleOverride = chat.title
         prompt = ""
         chatSearchQuery = ""
+        chatSearchActiveMessageID = nil
         messages = chat.messages
         setRuntimeState(.idle)
         isOverflowOpen = false

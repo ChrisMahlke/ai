@@ -149,7 +149,11 @@ struct ChatView: View {
             if !viewModel.messages.isEmpty {
                 ChatSearchBarView(
                     query: $viewModel.chatSearchQuery,
-                    matchCount: viewModel.chatSearchMatchCount
+                    matchCount: viewModel.chatSearchMatchCount,
+                    positionText: viewModel.chatSearchPositionText,
+                    canNavigate: viewModel.chatSearchResultMessageIDs.count > 1,
+                    previous: viewModel.jumpToPreviousSearchResult,
+                    next: viewModel.jumpToNextSearchResult
                 )
             }
 
@@ -157,6 +161,7 @@ struct ChatView: View {
                 messages: viewModel.messages,
                 isThinking: viewModel.isThinking,
                 searchQuery: viewModel.chatSearchQuery,
+                activeSearchMessageID: viewModel.chatSearchActiveMessageID,
                 useSuggestion: viewModel.useSuggestedPrompt,
                 editMessage: viewModel.editMessage,
                 deleteMessage: viewModel.deleteMessage,
@@ -177,6 +182,9 @@ struct ChatView: View {
                 stop: { viewModel.stopGeneration() },
                 regenerate: viewModel.regenerateLastResponse
             )
+        }
+        .onChange(of: viewModel.chatSearchQuery) { _, _ in
+            viewModel.resetChatSearchNavigation()
         }
     }
 }

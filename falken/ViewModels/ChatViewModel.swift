@@ -32,6 +32,7 @@ final class ChatViewModel: ObservableObject {
 
     @Published var prompt = ""
     @Published var chatSearchQuery = ""
+    @Published var chatSearchActiveMessageID: UUID?
     @Published var isDrawerOpen = false
     @Published var isSidebarCollapsed = false
     @Published var isOverflowOpen = false
@@ -177,6 +178,26 @@ final class ChatViewModel: ObservableObject {
         return messages.reduce(0) { count, message in
             count + message.text.localizedCaseInsensitiveMatchCount(of: query)
         }
+    }
+
+    var chatSearchResultMessageIDs: [UUID] {
+        let query = chatSearchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return [] }
+
+        return messages
+            .filter { $0.text.localizedCaseInsensitiveContains(query) }
+            .map(\.id)
+    }
+
+    var chatSearchPositionText: String {
+        let ids = chatSearchResultMessageIDs
+        guard !ids.isEmpty else { return "0/0" }
+        guard let chatSearchActiveMessageID,
+              let index = ids.firstIndex(of: chatSearchActiveMessageID) else {
+            return "1/\(ids.count)"
+        }
+
+        return "\(index + 1)/\(ids.count)"
     }
 
     var providerStatus: ProviderStatus {

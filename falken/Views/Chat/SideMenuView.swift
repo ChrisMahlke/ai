@@ -9,6 +9,15 @@ import SwiftUI
 import UIKit
 
 struct SideMenuView: View {
+    private enum RecentChatSearchScope: String, CaseIterable, Identifiable {
+        case all = "All"
+        case titles = "Titles"
+        case messages = "Messages"
+        case pinned = "Pinned"
+
+        var id: String { rawValue }
+    }
+
     let recentChats: [ChatSession]
     let onNewChat: () -> Void
     let onSavedPrompts: () -> Void
@@ -18,14 +27,74 @@ struct SideMenuView: View {
     let close: () -> Void
 
     @State private var searchText = ""
+    @State private var searchScope: RecentChatSearchScope = .all
 
     private var filteredChats: [ChatSession] {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !query.isEmpty else { return recentChats }
+        let scopedChats = searchScope == .pinned ? recentChats.filter(\.isPinned) : recentChats
+        guard !query.isEmpty else { return scopedChats }
 
-        return recentChats.filter { chat in
-            chat.title.localizedCaseInsensitiveContains(query)
-            || chat.messages.contains { $0.text.localizedCaseInsensitiveContains(query) }
+        return scopedChats.filter { chat in
+            switch searchScope {
+            case .all, .pinned:
+                return chat.title.localizedCaseInsensitiveContains(query)
+                || chat.messages.contains { $0.text.localizedCaseInsensitiveContains(query) }
+            case .titles:
+                return chat.title.localizedCaseInsensitiveContains(query)
+            case .messages:
+                return chat.messages.contains { $0.text.localizedCaseInsensitiveContains(query) }
+            }
+        }
+    }
+
+    private var searchScopeCount: Int {
+        switch searchScope {
+        case .all:
+            return recentChats.count
+        case .titles, .messages:
+            return filteredChats.count
+        case .pinned:
+            return recentChats.filter(\.isPinned).count
+        }
+    }
+
+    private var isShowingScopedSearch: Bool {
+        !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || searchScope != .all
+    }
+
+    private var emptySearchText: String {
+        if recentChats.isEmpty {
+            return "No recent chats"
+        }
+
+        if searchScope == .pinned, searchScopeCount == 0 {
+            return "No pinned chats"
+        }
+
+        return "No matches"
+    }
+
+    private func chatMatchesMessages(_ chat: ChatSession) -> Bool {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return false }
+
+        switch searchScope {
+        case .all, .messages, .pinned:
+            return chat.messages.contains { $0.text.localizedCaseInsensitiveContains(query) }
+        case .titles:
+            return false
+        }
+    }
+
+    private func chatMatchesTitle(_ chat: ChatSession) -> Bool {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return false }
+
+        switch searchScope {
+        case .all, .titles, .pinned:
+            return chat.title.localizedCaseInsensitiveContains(query)
+        case .messages:
+            return false
         }
     }
 
@@ -43,6 +112,10 @@ struct SideMenuView: View {
             searchField
                 .padding(.horizontal, 18)
                 .padding(.top, 12)
+
+            searchScopePicker
+                .padding(.horizontal, 18)
+                .padding(.top, 8)
 
             Spacer(minLength: 18)
 
@@ -87,7 +160,7 @@ struct SideMenuView: View {
                 Spacer()
 
                 if !recentChats.isEmpty {
-                    Text("\(recentChats.count)")
+                    Text(isShowingScopedSearch ? "\(filteredChats.count)/\(searchScopeCount)" : "\(recentChats.count)")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(AppTheme.foreground.opacity(0.32))
                 }
@@ -97,7 +170,7 @@ struct SideMenuView: View {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 4) {
                     if filteredChats.isEmpty {
-                        Text(recentChats.isEmpty ? "No recent chats" : "No matches")
+                        Text(emptySearchText)
                             .font(.system(size: 14, weight: .regular))
                             .foregroundStyle(AppTheme.foreground.opacity(0.36))
                             .padding(.horizontal, 18)
@@ -149,6 +222,27 @@ struct SideMenuView: View {
         )
     }
 
+    private var searchScopePicker: some View {
+        HStack(spacing: 6) {
+            ForEach(RecentChatSearchScope.allCases) { scope in
+                Button {
+                    searchScope = scope
+                } label: {
+                    Text(scope.rawValue)
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(searchScope == scope ? AppTheme.primaryActionText : AppTheme.foreground.opacity(0.48))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 28)
+                        .background(
+                            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                .fill(searchScope == scope ? AppTheme.primaryAction.opacity(0.86) : AppTheme.foreground.opacity(0.05))
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
     private func menuButton(title: String, icon: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 12) {
@@ -184,7 +278,7 @@ struct SideMenuView: View {
                         .frame(width: 22)
 
                     VStack(alignment: .leading, spacing: 3) {
-                        if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        if !chatMatchesTitle(chat) {
                             Text(chat.title)
                                 .font(.system(size: 14, weight: .regular))
                                 .lineLimit(1)
@@ -196,7 +290,7 @@ struct SideMenuView: View {
                                 .truncationMode(.tail)
                         }
 
-                        if let snippet = matchingSnippet(for: chat) {
+                        if chatMatchesMessages(chat), let snippet = matchingSnippet(for: chat) {
                             Text(highlighted(snippet))
                                 .font(.system(size: 11, weight: .regular))
                                 .foregroundStyle(AppTheme.foreground.opacity(0.38))

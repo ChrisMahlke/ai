@@ -10,6 +10,10 @@ import SwiftUI
 struct ChatSearchBarView: View {
     @Binding var query: String
     let matchCount: Int
+    let positionText: String
+    let canNavigate: Bool
+    let previous: () -> Void
+    let next: () -> Void
 
     var body: some View {
         HStack(spacing: 9) {
@@ -29,6 +33,17 @@ struct ChatSearchBarView: View {
                     .foregroundStyle(AppTheme.foreground.opacity(0.42))
                     .lineLimit(1)
                     .accessibilityLabel(matchCount == 1 ? "1 search match" : "\(matchCount) search matches")
+
+                Text(positionText)
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.48))
+                    .lineLimit(1)
+
+                searchJumpButton(systemImage: "chevron.up", action: previous)
+                    .disabled(!canNavigate)
+
+                searchJumpButton(systemImage: "chevron.down", action: next)
+                    .disabled(!canNavigate)
 
                 Button {
                     query = ""
@@ -51,5 +66,19 @@ struct ChatSearchBarView: View {
         )
         .padding(.horizontal, 18)
         .padding(.top, 8)
+    }
+
+    private func searchJumpButton(systemImage: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(.system(size: 11, weight: .bold))
+                .foregroundStyle(canNavigate ? AppTheme.foreground.opacity(0.5) : AppTheme.foreground.opacity(0.2))
+                .frame(width: 24, height: 24)
+                .background(
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .fill(AppTheme.foreground.opacity(0.055))
+                )
+        }
+        .buttonStyle(.plain)
     }
 }

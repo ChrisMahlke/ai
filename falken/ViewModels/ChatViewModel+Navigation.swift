@@ -109,4 +109,29 @@ extension ChatViewModel {
         isComposerFocused = false
         sharePayload = SharePayload(text: transcript)
     }
+
+    func resetChatSearchNavigation() {
+        chatSearchActiveMessageID = chatSearchResultMessageIDs.first
+    }
+
+    func jumpToNextSearchResult() {
+        jumpSearchResult(direction: 1)
+    }
+
+    func jumpToPreviousSearchResult() {
+        jumpSearchResult(direction: -1)
+    }
+
+    private func jumpSearchResult(direction: Int) {
+        let ids = chatSearchResultMessageIDs
+        guard !ids.isEmpty else {
+            chatSearchActiveMessageID = nil
+            return
+        }
+
+        let currentIndex = chatSearchActiveMessageID.flatMap { ids.firstIndex(of: $0) } ?? 0
+        let nextIndex = (currentIndex + direction + ids.count) % ids.count
+        chatSearchActiveMessageID = ids[nextIndex]
+        AppHaptics.selection()
+    }
 }

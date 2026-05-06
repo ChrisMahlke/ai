@@ -8,6 +8,12 @@
 import Foundation
 
 struct LocalModelResourceValidator {
+    let registry: LocalModelRegistry
+
+    init(registry: LocalModelRegistry = .default) {
+        self.registry = registry
+    }
+
     struct Inspection: Equatable {
         let url: URL?
         let fileExists: Bool
@@ -58,7 +64,7 @@ struct LocalModelResourceValidator {
     }
 
     func installedModels(bundle: Bundle = .main) -> [InstalledLocalModel] {
-        LocalModelProfile.allCases.map { installedModel(for: $0, bundle: bundle) }
+        registry.profiles.map { installedModel(for: $0, bundle: bundle) }
     }
 
     func validate(resource: LocalModelResource, bundle: Bundle = .main) -> Result {

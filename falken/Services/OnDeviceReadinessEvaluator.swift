@@ -28,6 +28,7 @@ struct OnDeviceReadinessEvaluator {
         let checks = [
             modelFoundCheck(resource: resource, inspection: inspection),
             targetMembershipCheck(resource: resource, inspection: inspection),
+            deviceCapabilityCheck(activeModelProfile: activeModelProfile),
             signingAndDeviceCheck(),
             capacityCheck(resource: resource, inspection: inspection)
         ]
@@ -84,6 +85,22 @@ struct OnDeviceReadinessEvaluator {
             status: .ready
         )
         #endif
+    }
+
+    private func deviceCapabilityCheck(activeModelProfile: LocalModelProfile) -> OnDeviceReadinessReport.Check {
+        let capability = DeviceCapabilityProfile.current()
+        let isRecommended = capability.recommendedModelProfile == activeModelProfile
+            || activeModelProfile == .smallFast
+
+        return OnDeviceReadinessReport.Check(
+            id: "device-capability",
+            title: capability.tier.rawValue,
+            detail: isRecommended
+            ? "\(activeModelProfile.title) matches this device tier. Context ceiling: \(capability.contextCeiling) tokens."
+            : "\(activeModelProfile.title) may exceed this tier. Recommended: \(capability.recommendedModelProfile.title) with \(capability.recommendedPreset.rawValue).",
+            systemImage: "memorychip",
+            status: isRecommended ? .ready : .warning
+        )
     }
 
     private func capacityCheck(

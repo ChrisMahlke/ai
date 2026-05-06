@@ -11,6 +11,7 @@ struct ModelManagementContent: View {
     let activeModelProfile: LocalModelProfile
     let installedModels: [InstalledLocalModel]
     let selectModelProfile: (LocalModelProfile) -> Void
+    private let registry = LocalModelRegistry.default
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -37,7 +38,7 @@ struct ModelManagementContent: View {
                         .fixedSize(horizontal: false, vertical: true)
 
                     VStack(alignment: .leading, spacing: 10) {
-                        ForEach(LocalModelProfile.allCases) { profile in
+                        ForEach(registry.profiles) { profile in
                             installHelperRow(profile)
                         }
                     }

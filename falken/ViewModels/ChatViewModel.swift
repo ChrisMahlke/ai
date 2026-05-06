@@ -46,20 +46,19 @@ final class ChatViewModel: ObservableObject {
     let localResponder: any ChatResponding
     let geminiResponder: any ChatResponding
     let localAIManager: LocalAIManager?
-    let historyStore: ChatHistoryStore
+    let historyPersistence: ChatPersistenceService
     let providerStore: ChatProviderStore
     let promptTemplateStore: PromptTemplateStore
     let appearanceStore: AppAppearanceStore
     let onboardingStore: OnboardingStore
     let readinessEvaluator = OnDeviceReadinessEvaluator()
+    let generationCoordinator = ChatGenerationCoordinator()
     var responseTask: Task<Void, Never>?
     var generationTimeoutTask: Task<Void, Never>?
     var generationBackoffTask: Task<Void, Never>?
-    var pendingHistorySaveTask: Task<Void, Never>?
     var generationStartedAt: Date?
     var consecutiveGenerationTimeouts = 0
     var cancellables: Set<AnyCancellable> = []
-    let historyPolicy: ChatHistoryPolicy
     let generationTimeoutNanoseconds: UInt64 = 120_000_000_000
 
     init(
@@ -78,8 +77,10 @@ final class ChatViewModel: ObservableObject {
         self.localAIManager = manager
         self.localResponder = LocalModelChatResponder(manager: manager)
         self.geminiResponder = GeminiChatResponder(configuration: .default)
-        self.historyStore = historyStore ?? ChatHistoryStore()
-        self.historyPolicy = historyPolicy
+        self.historyPersistence = ChatPersistenceService(
+            store: historyStore ?? ChatHistoryStore(),
+            policy: historyPolicy
+        )
         self.providerStore = resolvedProviderStore
         self.promptTemplateStore = resolvedPromptTemplateStore
         self.appearanceStore = resolvedAppearanceStore
@@ -112,8 +113,10 @@ final class ChatViewModel: ObservableObject {
         self.localResponder = responder
         self.geminiResponder = GeminiChatResponder(configuration: .default)
         self.localAIManager = localAIManager
-        self.historyStore = historyStore ?? ChatHistoryStore()
-        self.historyPolicy = historyPolicy
+        self.historyPersistence = ChatPersistenceService(
+            store: historyStore ?? ChatHistoryStore(),
+            policy: historyPolicy
+        )
         self.providerStore = resolvedProviderStore
         self.promptTemplateStore = resolvedPromptTemplateStore
         self.appearanceStore = resolvedAppearanceStore
@@ -135,7 +138,6 @@ final class ChatViewModel: ObservableObject {
         responseTask?.cancel()
         generationTimeoutTask?.cancel()
         generationBackoffTask?.cancel()
-        pendingHistorySaveTask?.cancel()
     }
 
     var canSend: Bool {

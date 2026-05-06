@@ -20,7 +20,11 @@ extension LocalAIManager {
         }
 
         let engine = engine
-        let messages = LocalPromptBuilder.chatTurns(prompt: prompt, history: history)
+        let messages = LocalPromptBuilder.chatTurns(
+            prompt: prompt,
+            history: history,
+            settings: settings.clamped
+        )
 
         return AsyncStream { continuation in
             let generationTask = Task {
@@ -56,8 +60,17 @@ extension LocalAIManager {
 }
 
 enum LocalPromptBuilder {
-    static func chatTurns(prompt: String, history: [ChatMessage]) -> [LlamaChatTurn] {
+    static func chatTurns(
+        prompt: String,
+        history: [ChatMessage],
+        settings: LocalModelSettings
+    ) -> [LlamaChatTurn] {
         let conversationalHistory = history.isEmpty ? [ChatMessage(role: .user, text: prompt)] : history
+        let optimizedHistory = PromptContextOptimizer(
+            tokenBudget: settings.contextTokenLimit,
+            reservedResponseTokens: settings.outputTokenLimit
+        )
+        .optimizedMessages(from: conversationalHistory)
         var turns = [
             LlamaChatTurn(
                 role: "system",
@@ -65,7 +78,7 @@ enum LocalPromptBuilder {
             )
         ]
 
-        for message in conversationalHistory {
+        for message in optimizedHistory {
             switch message.role {
             case .user:
                 turns.append(LlamaChatTurn(role: "user", content: message.text))

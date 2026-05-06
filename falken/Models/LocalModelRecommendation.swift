@@ -22,23 +22,11 @@ struct LocalModelRecommendation: Equatable, Sendable {
             )
         }
 
-        if physicalMemoryBytes <= 4_500_000_000 {
-            return LocalModelRecommendation(
-                preset: .efficient,
-                reason: "Recommended for 4 GB memory devices."
-            )
-        }
-
-        if physicalMemoryBytes >= 7_000_000_000, thermalState == .nominal {
-            return LocalModelRecommendation(
-                preset: .expanded,
-                reason: "Recommended when memory and thermal headroom are strong."
-            )
-        }
+        let capability = DeviceCapabilityProfile.current(physicalMemoryBytes: physicalMemoryBytes)
 
         return LocalModelRecommendation(
-            preset: .balanced,
-            reason: "Recommended for general use on this device."
+            preset: capability.recommendedPreset,
+            reason: "Recommended for \(capability.tier.rawValue)."
         )
     }
 }

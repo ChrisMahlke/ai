@@ -112,42 +112,27 @@ extension ChatViewModel {
         responseTask = Task { [weak self, responder] in
             guard let self else { return }
 
-            let stream = await responder.responseStream(for: prompt, history: history)
-            let assistantID = UUID()
-            var didStartResponse = false
-            var tokenBuffer = ""
-            var lastFlush = Date()
+            let events = await self.generationCoordinator.events(
+                prompt: prompt,
+                history: history,
+                responder: responder
+            )
 
-            func flushBufferedTokens() async {
-                guard !tokenBuffer.isEmpty else { return }
+            for await event in events {
+                guard !Task.isCancelled else { return }
 
-                await self.appendAssistantToken(tokenBuffer, messageID: assistantID, chatID: chatID)
-                tokenBuffer = ""
-                lastFlush = Date()
-            }
-
-            for await token in stream {
-                guard !Task.isCancelled else {
-                    await flushBufferedTokens()
-                    return
-                }
-
-                if !didStartResponse {
+                switch event {
+                case .started(let assistantID):
                     self.beginAssistantResponse(id: assistantID, chatID: chatID)
-                    didStartResponse = true
+                case .token(let token, let assistantID):
+                    self.appendAssistantToken(token, messageID: assistantID, chatID: chatID)
+                case .finished(let didStart):
+                    if didStart {
+                        self.finishAssistantResponse(chatID: chatID)
+                    } else {
+                        self.finishCancelledOrEmptyResponse(chatID: chatID)
+                    }
                 }
-
-                tokenBuffer += token
-                if tokenBuffer.count >= 32 || Date().timeIntervalSince(lastFlush) >= 0.045 || token.contains("\n") {
-                    await flushBufferedTokens()
-                }
-            }
-
-            if didStartResponse {
-                await flushBufferedTokens()
-                self.finishAssistantResponse(chatID: chatID)
-            } else {
-                self.finishCancelledOrEmptyResponse(chatID: chatID)
             }
         }
     }

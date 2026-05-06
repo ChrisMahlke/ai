@@ -69,7 +69,7 @@ extension ChatViewModel {
         prompt = ""
         chatSearchQuery = ""
         generationMetrics = .empty
-        historyStore.clear()
+        historyPersistence.clear()
         scheduleHistorySave()
     }
 
@@ -125,7 +125,7 @@ extension ChatViewModel {
         let session = ChatSession(
             id: currentChatID,
             title: chatTitle,
-            messages: Array(messages.suffix(historyPolicy.maxArchivedMessagesPerChat)),
+            messages: historyPersistence.pruneArchivedMessages(messages),
             createdAt: existingSession?.createdAt ?? Date(),
             updatedAt: Date(),
             isPinned: existingSession?.isPinned ?? false
@@ -134,9 +134,7 @@ extension ChatViewModel {
         recentChats.removeAll { $0.id == currentChatID }
         recentChats.insert(session, at: 0)
         sortRecentChats()
-        if recentChats.count > historyPolicy.maxRecentChats {
-            recentChats.removeLast(recentChats.count - historyPolicy.maxRecentChats)
-        }
+        recentChats = historyPersistence.pruneRecentChats(recentChats)
     }
 
     func sortRecentChats() {
@@ -150,8 +148,7 @@ extension ChatViewModel {
     }
 
     func restoreHistory() {
-        guard let snapshot = historyStore.load() else { return }
-        let prunedSnapshot = historyPolicy.pruneSnapshot(snapshot)
+        guard let prunedSnapshot = historyPersistence.load() else { return }
 
         currentChatID = prunedSnapshot.currentChatID
         currentTitleOverride = normalizedChatTitle(prunedSnapshot.currentTitleOverride ?? "")
@@ -161,40 +158,31 @@ extension ChatViewModel {
     }
 
     func scheduleHistorySave() {
-        pendingHistorySaveTask?.cancel()
-
-        let snapshot = historyPolicy.pruneSnapshot(ChatHistorySnapshot(
+        let snapshot = ChatHistorySnapshot(
             currentChatID: currentChatID,
             currentTitleOverride: currentTitleOverride,
             currentMessages: messages,
             recentChats: recentChats
-        ))
-        let store = historyStore
+        )
 
-        pendingHistorySaveTask = Task {
-            try? await Task.sleep(for: .milliseconds(450))
-            guard !Task.isCancelled else { return }
-            store.save(snapshot)
-        }
+        historyPersistence.scheduleSave(snapshot)
     }
 
     func saveHistoryImmediately() {
-        pendingHistorySaveTask?.cancel()
-
-        let snapshot = historyPolicy.pruneSnapshot(ChatHistorySnapshot(
+        let snapshot = ChatHistorySnapshot(
             currentChatID: currentChatID,
             currentTitleOverride: currentTitleOverride,
             currentMessages: messages,
             recentChats: recentChats
-        ))
+        )
 
-        historyStore.save(snapshot)
+        historyPersistence.saveImmediately(snapshot)
     }
 
     func trimVisibleMessagesIfNeeded() {
-        guard messages.count > historyPolicy.maxVisibleMessages else { return }
+        guard messages.count > historyPersistence.policy.maxVisibleMessages else { return }
 
-        messages = historyPolicy.pruneVisibleMessages(messages)
+        messages = historyPersistence.pruneVisibleMessages(messages)
     }
 
     func transcriptText() -> String {

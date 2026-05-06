@@ -155,11 +155,40 @@ extension ChatViewModel {
     func restoreHistory() {
         guard let prunedSnapshot = historyPersistence.load() else { return }
 
-        currentChatID = prunedSnapshot.currentChatID
-        currentTitleOverride = normalizedChatTitle(prunedSnapshot.currentTitleOverride ?? "")
-        messages = prunedSnapshot.currentMessages
         recentChats = prunedSnapshot.recentChats
+        restorePreviousCurrentChatAsRecent(from: prunedSnapshot)
         sortRecentChats()
+        recentChats = historyPersistence.pruneRecentChats(recentChats)
+
+        currentChatID = UUID()
+        currentTitleOverride = nil
+        messages = []
+        prompt = ""
+        chatSearchQuery = ""
+        chatSearchActiveMessageID = nil
+        generationMetrics = .empty
+        setRuntimeState(.idle)
+        saveHistoryImmediately()
+    }
+
+    private func restorePreviousCurrentChatAsRecent(from snapshot: ChatHistorySnapshot) {
+        guard snapshot.currentMessages.contains(where: { $0.role == .user }) else { return }
+
+        let title = normalizedChatTitle(snapshot.currentTitleOverride ?? "")
+            ?? normalizedChatTitle(snapshot.currentMessages.first { $0.role == .user }?.text ?? "")
+            ?? "New chat"
+        let existingSession = recentChats.first { $0.id == snapshot.currentChatID }
+        let session = ChatSession(
+            id: snapshot.currentChatID,
+            title: title,
+            messages: historyPersistence.pruneArchivedMessages(snapshot.currentMessages),
+            createdAt: existingSession?.createdAt ?? Date(),
+            updatedAt: Date(),
+            isPinned: existingSession?.isPinned ?? false
+        )
+
+        recentChats.removeAll { $0.id == snapshot.currentChatID }
+        recentChats.insert(session, at: 0)
     }
 
     func scheduleHistorySave() {

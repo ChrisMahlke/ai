@@ -95,7 +95,7 @@ extension LocalAIManager {
         }
     }
 
-    func unloadModel(reason: String? = nil) {
+    func unloadModel(reason: String? = nil, finalState: LoadState = .idle) {
         engine.cancelGeneration()
         let engine = engine
         runtimeTelemetry.lastUnloadReason = reason
@@ -105,12 +105,29 @@ extension LocalAIManager {
                 guard let self else { return }
 
                 self.runtimeTelemetry.appMemoryAfterUnloadBytes = LocalModelMemoryPolicy.currentAppMemoryFootprint()
-                self.loadState = .idle
+                self.loadState = finalState
                 self.refreshDiagnosticsAfterTelemetryChange()
             }
         }
-        loadState = .idle
+        loadState = finalState
         refreshDiagnosticsAfterTelemetryChange()
+    }
+
+    func unloadModelForRuntimeGuardrail(reason: String) {
+        switch loadState {
+        case .loaded, .loading:
+            unloadModel(reason: reason, finalState: .unavailable(reason))
+        case .idle, .unavailable, .failed:
+            break
+        }
+    }
+
+    func handleThermalStateChange(_ thermalState: ProcessInfo.ThermalState) {
+        guard thermalState == .serious || thermalState == .critical else { return }
+
+        unloadModelForRuntimeGuardrail(
+            reason: "Unloaded local model because the device reported \(thermalState.falkenDisplayName.lowercased()) thermal pressure."
+        )
     }
 
     func updateLoading(

@@ -22,9 +22,15 @@ struct LocalModelMemoryPolicy {
         case denied(Snapshot, String)
     }
 
+    enum RuntimePressureDecision: Equatable {
+        case safe
+        case unload(String)
+    }
+
     private let minimumPhysicalMemoryBytes: UInt64 = 3_500_000_000
     private let workingMemoryHeadroomBytes: UInt64 = 768 * 1_024 * 1_024
     private let maxProjectedMemoryRatio = 0.86
+    private let maxRuntimeMemoryRatio = 0.88
 
     func evaluate(modelURL: URL) -> Decision {
         let snapshot = Snapshot(
@@ -52,6 +58,20 @@ struct LocalModelMemoryPolicy {
         }
 
         return .allowed(snapshot)
+    }
+
+    func evaluateRuntimePressure(appMemoryBytes: UInt64) -> RuntimePressureDecision {
+        let thermalState = ProcessInfo.processInfo.thermalState
+        if thermalState == .serious || thermalState == .critical {
+            return .unload("Unloaded local model because the device reported \(thermalState.falkenDisplayName.lowercased()) thermal pressure.")
+        }
+
+        let memoryRatio = Double(appMemoryBytes) / Double(ProcessInfo.processInfo.physicalMemory)
+        guard memoryRatio <= maxRuntimeMemoryRatio else {
+            return .unload("Unloaded local model because app memory pressure became too high during generation.")
+        }
+
+        return .safe
     }
 
     static func fileSize(at url: URL) -> UInt64 {

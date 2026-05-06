@@ -11,6 +11,18 @@ import UIKit
 @MainActor
 extension ChatViewModel {
     func observeLocalAIManager(_ manager: LocalAIManager) {
+        manager.$loadState
+            .receive(on: RunLoop.main)
+            .sink { [weak self] loadState in
+                switch loadState {
+                case .unavailable, .failed:
+                    self?.updateBackendNotice(from: loadState)
+                case .idle, .loading, .loaded:
+                    break
+                }
+            }
+            .store(in: &cancellables)
+
         manager.objectWillChange
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in

@@ -17,6 +17,10 @@ extension LocalAIManager {
             runtimeTelemetry.peakGenerationMemoryBytes = currentMemoryBytes
             refreshDiagnosticsAfterTelemetryChange()
         }
+
+        if case .unload(let reason) = memoryPolicy.evaluateRuntimePressure(appMemoryBytes: currentMemoryBytes) {
+            unloadModelForRuntimeGuardrail(reason: reason)
+        }
     }
 
     func diagnosticsForUnavailableModel(_ message: String) -> LocalModelDiagnostics {
@@ -74,7 +78,11 @@ extension LocalAIManager {
             if diagnostics.status == .ready {
                 diagnostics.status = .notChecked
             }
-        case .loading, .unavailable, .failed:
+        case .unavailable(let reason):
+            diagnostics.status = .unavailable(reason)
+        case .failed(let reason):
+            diagnostics.status = .failed(reason)
+        case .loading:
             break
         }
 

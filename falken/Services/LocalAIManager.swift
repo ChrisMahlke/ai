@@ -65,6 +65,16 @@ final class LocalAIManager: ObservableObject {
         })
 
         notificationObservers.append(NotificationCenter.default.addObserver(
+            forName: ProcessInfo.thermalStateDidChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.handleThermalStateChange(ProcessInfo.processInfo.thermalState)
+            }
+        })
+
+        notificationObservers.append(NotificationCenter.default.addObserver(
             forName: UIApplication.didEnterBackgroundNotification,
             object: nil,
             queue: .main

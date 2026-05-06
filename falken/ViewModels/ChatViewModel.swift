@@ -41,6 +41,7 @@ final class ChatViewModel: ObservableObject {
     @Published var isComposerFocused = false
     @Published var composerInputHeight: CGFloat = 20
     @Published var sharePayload: SharePayload?
+    @Published var generationBackoffUntil: Date?
 
     let localResponder: any ChatResponding
     let geminiResponder: any ChatResponding
@@ -50,10 +51,13 @@ final class ChatViewModel: ObservableObject {
     let promptTemplateStore: PromptTemplateStore
     let appearanceStore: AppAppearanceStore
     let onboardingStore: OnboardingStore
+    let readinessEvaluator = OnDeviceReadinessEvaluator()
     var responseTask: Task<Void, Never>?
     var generationTimeoutTask: Task<Void, Never>?
+    var generationBackoffTask: Task<Void, Never>?
     var pendingHistorySaveTask: Task<Void, Never>?
     var generationStartedAt: Date?
+    var consecutiveGenerationTimeouts = 0
     var cancellables: Set<AnyCancellable> = []
     let historyPolicy: ChatHistoryPolicy
     let generationTimeoutNanoseconds: UInt64 = 120_000_000_000
@@ -130,15 +134,22 @@ final class ChatViewModel: ObservableObject {
     deinit {
         responseTask?.cancel()
         generationTimeoutTask?.cancel()
+        generationBackoffTask?.cancel()
         pendingHistorySaveTask?.cancel()
     }
 
     var canSend: Bool {
-        !prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isResponseActive
+        !prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isResponseActive && !isInGenerationBackoff
     }
 
     var isResponseActive: Bool {
         isThinking || isGenerating
+    }
+
+    var isInGenerationBackoff: Bool {
+        guard let generationBackoffUntil else { return false }
+
+        return generationBackoffUntil > Date()
     }
 
     var chatTitle: String {
@@ -154,7 +165,7 @@ final class ChatViewModel: ObservableObject {
     }
 
     var canRegenerate: Bool {
-        !isResponseActive && messages.contains { $0.role == .user }
+        !isResponseActive && !isInGenerationBackoff && messages.contains { $0.role == .user }
     }
 
     var chatSearchMatchCount: Int {
@@ -178,6 +189,10 @@ final class ChatViewModel: ObservableObject {
                 detail: "Remote SDK calls are intentionally behind the provider abstraction. Add Gemini credentials and SDK wiring before using it for production responses."
             )
         }
+    }
+
+    var readinessReport: OnDeviceReadinessReport {
+        readinessEvaluator.evaluate(activeModelProfile: activeModelProfile)
     }
 
     var modelSettings: LocalModelSettings {

@@ -20,6 +20,11 @@ extension ChatViewModel {
     func sendCurrentPrompt() {
         let trimmedPrompt = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedPrompt.isEmpty, !isResponseActive else { return }
+        guard !isInGenerationBackoff else {
+            backendNotice = generationBackoffMessage()
+            isComposerFocused = true
+            return
+        }
 
         AppHaptics.lightImpact()
         isComposerFocused = false
@@ -33,6 +38,11 @@ extension ChatViewModel {
 
     func regenerateLastResponse() {
         guard canRegenerate, let lastUserIndex = messages.lastIndex(where: { $0.role == .user }) else { return }
+        guard !isInGenerationBackoff else {
+            backendNotice = generationBackoffMessage()
+            isComposerFocused = true
+            return
+        }
 
         AppHaptics.lightImpact()
         isComposerFocused = false
@@ -180,6 +190,7 @@ extension ChatViewModel {
         guard chatID == currentChatID else { return }
         responseTask = nil
         cancelGenerationTimeout()
+        resetGenerationTimeoutBackoff()
         setRuntimeState(.idle)
         generationStartedAt = nil
         trimVisibleMessagesIfNeeded()
@@ -223,7 +234,7 @@ extension ChatViewModel {
         responseTask = nil
         generationTimeoutTask = nil
         generationStartedAt = nil
-        backendNotice = "Generation timed out. Try a shorter prompt or Efficient settings."
+        applyGenerationTimeoutBackoff()
         setRuntimeState(.idle)
         isComposerFocused = true
 
@@ -238,5 +249,48 @@ extension ChatViewModel {
 
         trimVisibleMessagesIfNeeded()
         scheduleHistorySave()
+    }
+
+    func applyGenerationTimeoutBackoff() {
+        consecutiveGenerationTimeouts += 1
+        let seconds = min(60, 10 * (1 << min(consecutiveGenerationTimeouts - 1, 3)))
+        let backoffUntil = Date().addingTimeInterval(TimeInterval(seconds))
+        generationBackoffUntil = backoffUntil
+        let message = generationBackoffMessage()
+        backendNotice = message
+
+        if consecutiveGenerationTimeouts >= 2 {
+            localAIManager?.unloadModel(
+                reason: "Unloaded local model after repeated generation timeouts.",
+                finalState: .unavailable(message)
+            )
+        }
+
+        generationBackoffTask?.cancel()
+        generationBackoffTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64(seconds) * 1_000_000_000)
+            guard !Task.isCancelled else { return }
+
+            self?.generationBackoffUntil = nil
+            if self?.backendNotice?.hasPrefix("Generation timed out. Local inference is cooling down") == true {
+                self?.backendNotice = nil
+            }
+        }
+    }
+
+    func resetGenerationTimeoutBackoff() {
+        consecutiveGenerationTimeouts = 0
+        generationBackoffUntil = nil
+        generationBackoffTask?.cancel()
+        generationBackoffTask = nil
+    }
+
+    func generationBackoffMessage() -> String {
+        guard let generationBackoffUntil else {
+            return "Generation timed out. Try a shorter prompt or Efficient settings."
+        }
+
+        let remainingSeconds = max(1, Int(ceil(generationBackoffUntil.timeIntervalSinceNow)))
+        return "Generation timed out. Local inference is cooling down for \(remainingSeconds)s. Try a shorter prompt or Efficient settings."
     }
 }

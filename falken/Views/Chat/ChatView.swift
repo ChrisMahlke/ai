@@ -106,7 +106,7 @@ struct ChatView: View {
         }
         .fullScreenCover(isPresented: $viewModel.isOnboardingPresented) {
             OnboardingView(
-                installedModels: viewModel.installedModels,
+                readinessReport: viewModel.readinessReport,
                 complete: viewModel.completeOnboarding
             )
             .preferredColorScheme(viewModel.appearanceMode.colorScheme)

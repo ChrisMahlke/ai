@@ -22,8 +22,8 @@ struct ComposerTextView: UIViewRepresentable {
         textView.backgroundColor = .clear
         textView.font = .systemFont(ofSize: 16)
         textView.adjustsFontForContentSizeCategory = true
-        textView.textColor = .white
-        textView.tintColor = .white
+        textView.textColor = .label
+        textView.tintColor = .label
         textView.textContainerInset = .zero
         textView.textContainer.lineFragmentPadding = 0
         textView.isScrollEnabled = true
@@ -50,6 +50,8 @@ struct ComposerTextView: UIViewRepresentable {
             textView.text = text
         }
 
+        textView.textColor = .label
+        textView.tintColor = .label
         textView.isEditable = isEnabled
         textView.isSelectable = isEnabled
         context.coordinator.recalculateHeight(for: textView)

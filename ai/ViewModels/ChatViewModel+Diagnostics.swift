@@ -42,7 +42,7 @@ struct ChatDiagnosticsReporter {
         let loadTime = diagnostics.loadDuration.map { String(format: "%.1fs", $0) } ?? "n/a"
 
         return """
-        ai diagnostics
+        \(AppBrand.name) diagnostics
 
         Provider: \(selectedProvider.title)
         Active local model: \(activeModelProfile.title)

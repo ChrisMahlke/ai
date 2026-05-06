@@ -32,7 +32,7 @@ struct ModelManagementContent: View {
 
                     Text("Add GGUF files to `ai/Models`, include them in the app target, then rebuild. Keep only the models you need in the target because each bundled model increases app size and memory pressure.")
                         .font(.system(size: 14, weight: .regular))
-                        .foregroundStyle(.white.opacity(0.58))
+                        .foregroundStyle(AppTheme.foreground.opacity(0.58))
                         .lineSpacing(4)
                         .fixedSize(horizontal: false, vertical: true)
 
@@ -40,7 +40,7 @@ struct ModelManagementContent: View {
                         ForEach(LocalModelProfile.allCases) { profile in
                             Text(profile.installationNote)
                                 .font(.system(size: 12, weight: .regular, design: .monospaced))
-                                .foregroundStyle(.white.opacity(0.44))
+                                .foregroundStyle(AppTheme.foreground.opacity(0.44))
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                     }
@@ -55,34 +55,34 @@ struct ModelManagementContent: View {
         return HStack(alignment: .top, spacing: 12) {
             Image(systemName: model.isInstalled ? "checkmark.circle.fill" : "arrow.down.circle")
                 .font(.system(size: 17, weight: .semibold))
-                .foregroundStyle(model.isInstalled ? .green.opacity(0.82) : .white.opacity(0.32))
+                .foregroundStyle(model.isInstalled ? .green.opacity(0.82) : AppTheme.foreground.opacity(0.32))
                 .frame(width: 24, height: 24)
 
             VStack(alignment: .leading, spacing: 5) {
                 HStack(spacing: 8) {
                     Text(model.profile.title)
                         .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.9))
+                        .foregroundStyle(AppTheme.foreground.opacity(0.9))
 
                     if isActive {
                         Text("Active")
                             .font(.system(size: 10, weight: .semibold))
-                            .foregroundStyle(.black.opacity(0.78))
+                            .foregroundStyle(AppTheme.primaryActionText.opacity(0.78))
                             .padding(.horizontal, 7)
                             .frame(height: 20)
-                            .background(Color.white.opacity(0.88))
+                            .background(AppTheme.primaryAction.opacity(0.88))
                             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                     }
                 }
 
                 Text(model.profile.subtitle)
                     .font(.system(size: 12, weight: .regular))
-                    .foregroundStyle(.white.opacity(0.48))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.48))
                     .fixedSize(horizontal: false, vertical: true)
 
                 Text(model.isInstalled ? byteString(model.fileSizeBytes) : model.statusText)
                     .font(.system(size: 11, weight: .regular))
-                    .foregroundStyle(.white.opacity(0.38))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.38))
                     .lineLimit(3)
             }
 
@@ -94,8 +94,8 @@ struct ModelManagementContent: View {
                 Text(isActive ? "Selected" : "Use")
                     .font(.system(size: 13, weight: .semibold))
                     .frame(width: 72, height: 36)
-                    .background(model.isInstalled && !isActive ? Color.white : Color.white.opacity(0.1))
-                    .foregroundStyle(model.isInstalled && !isActive ? Color.black : Color.white.opacity(0.46))
+                    .background(model.isInstalled && !isActive ? AppTheme.primaryAction : AppTheme.foreground.opacity(0.1))
+                    .foregroundStyle(model.isInstalled && !isActive ? AppTheme.primaryActionText : AppTheme.foreground.opacity(0.46))
                     .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
             .buttonStyle(.plain)
@@ -104,8 +104,8 @@ struct ModelManagementContent: View {
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(Color.white.opacity(isActive ? 0.08 : 0.045))
-                .stroke(Color.white.opacity(isActive ? 0.16 : 0.07), lineWidth: 1)
+                .fill(isActive ? AppTheme.elevatedFill : AppTheme.panelFill)
+                .stroke(isActive ? AppTheme.panelStroke.opacity(1.35) : AppTheme.panelStroke.opacity(0.75), lineWidth: 1)
         )
     }
 

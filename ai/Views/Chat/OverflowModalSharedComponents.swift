@@ -20,8 +20,8 @@ struct ModalPanel<Content: View>: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(Color.white.opacity(0.055))
-                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                    .fill(AppTheme.panelFill)
+                    .stroke(AppTheme.panelStroke, lineWidth: 1)
             )
     }
 }
@@ -36,7 +36,7 @@ struct SectionTitle: View {
     var body: some View {
         Text(title)
             .font(.system(size: 12, weight: .semibold))
-            .foregroundStyle(.white.opacity(0.48))
+            .foregroundStyle(AppTheme.foreground.opacity(0.48))
             .textCase(.uppercase)
     }
 }
@@ -49,12 +49,12 @@ struct DiagnosticRow: View {
         HStack(alignment: .top, spacing: 12) {
             Text(label)
                 .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(.white.opacity(0.46))
+                .foregroundStyle(AppTheme.foreground.opacity(0.46))
                 .frame(width: 96, alignment: .leading)
 
             Text(value)
                 .font(.system(size: 14, weight: .regular))
-                .foregroundStyle(.white.opacity(0.82))
+                .foregroundStyle(AppTheme.foreground.opacity(0.82))
                 .lineLimit(3)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -73,17 +73,17 @@ struct PresetButton: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(preset.rawValue)
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.9))
+                        .foregroundStyle(AppTheme.foreground.opacity(0.9))
 
                     if isRecommended {
                         Text("Recommended")
                             .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(.white.opacity(0.5))
+                            .foregroundStyle(AppTheme.foreground.opacity(0.5))
                     }
 
                     Text(preset.subtitle)
                         .font(.system(size: 12, weight: .regular))
-                        .foregroundStyle(.white.opacity(0.45))
+                        .foregroundStyle(AppTheme.foreground.opacity(0.45))
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
@@ -91,14 +91,14 @@ struct PresetButton: View {
 
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(isSelected ? .white.opacity(0.88) : .white.opacity(0.24))
+                    .foregroundStyle(isSelected ? AppTheme.foreground.opacity(0.88) : AppTheme.foreground.opacity(0.24))
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 11)
             .background(
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(Color.white.opacity(isSelected ? 0.1 : 0.045))
-                    .stroke(Color.white.opacity(isSelected ? 0.18 : 0.07), lineWidth: 1)
+                    .fill(isSelected ? AppTheme.elevatedFill : AppTheme.panelFill)
+                    .stroke(isSelected ? AppTheme.panelStroke.opacity(1.35) : AppTheme.panelStroke.opacity(0.75), lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -117,23 +117,23 @@ struct ProviderButton: View {
                     Image(systemName: provider.systemImage)
                         .font(.system(size: 14, weight: .semibold))
                         .frame(width: 24, height: 24)
-                        .background(Color.white.opacity(0.07))
+                        .background(AppTheme.subtleFill)
                         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
 
                     Spacer()
 
                     Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(isSelected ? .white.opacity(0.9) : .white.opacity(0.28))
+                        .foregroundStyle(isSelected ? AppTheme.foreground.opacity(0.9) : AppTheme.foreground.opacity(0.28))
                 }
 
                 Text(provider.title)
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.9))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.9))
 
                 Text(provider.subtitle)
                     .font(.system(size: 11, weight: .regular))
-                    .foregroundStyle(.white.opacity(0.44))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.44))
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -141,8 +141,8 @@ struct ProviderButton: View {
             .frame(maxWidth: .infinity, minHeight: 106, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(Color.white.opacity(isSelected ? 0.1 : 0.045))
-                    .stroke(Color.white.opacity(isSelected ? 0.18 : 0.07), lineWidth: 1)
+                    .fill(isSelected ? AppTheme.elevatedFill : AppTheme.panelFill)
+                    .stroke(isSelected ? AppTheme.panelStroke.opacity(1.35) : AppTheme.panelStroke.opacity(0.75), lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -161,12 +161,12 @@ struct ProviderHealthBadge: View {
             Text(label)
                 .font(.system(size: 11, weight: .semibold))
         }
-        .foregroundStyle(.white.opacity(0.62))
+        .foregroundStyle(AppTheme.foreground.opacity(0.62))
         .padding(.horizontal, 9)
         .frame(height: 24)
         .background(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(Color.white.opacity(0.07))
+                .fill(AppTheme.subtleFill)
         )
     }
 
@@ -192,7 +192,7 @@ struct ProviderHealthBadge: View {
         case .loading:
             return .yellow.opacity(0.82)
         case .notConfigured, .unknown:
-            return .white.opacity(0.34)
+            return AppTheme.foreground.opacity(0.34)
         case .unavailable:
             return .red.opacity(0.76)
         }
@@ -213,11 +213,11 @@ struct IntegerSettingRow: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(title)
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.9))
+                        .foregroundStyle(AppTheme.foreground.opacity(0.9))
 
                     Text(note)
                         .font(.system(size: 12, weight: .regular))
-                        .foregroundStyle(.white.opacity(0.45))
+                        .foregroundStyle(AppTheme.foreground.opacity(0.45))
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
@@ -225,7 +225,7 @@ struct IntegerSettingRow: View {
 
                 Text(valueText)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.84))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.84))
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
                     .frame(minWidth: 58, alignment: .trailing)
@@ -246,7 +246,7 @@ struct IntegerSettingRow: View {
                     in: Double(range.lowerBound)...Double(range.upperBound),
                     step: Double(step)
                 )
-                .tint(.white.opacity(0.86))
+                .tint(AppTheme.foreground.opacity(0.86))
 
                 adjustmentButton(systemName: "plus", isEnabled: value < range.upperBound) {
                     value = min(range.upperBound, value + step)
@@ -264,8 +264,8 @@ struct IntegerSettingRow: View {
             Image(systemName: systemName)
                 .font(.system(size: 12, weight: .bold))
                 .frame(width: 32, height: 32)
-                .background(Color.white.opacity(isEnabled ? 0.1 : 0.05))
-                .foregroundStyle(Color.white.opacity(isEnabled ? 0.86 : 0.24))
+                .background(AppTheme.foreground.opacity(isEnabled ? 0.1 : 0.05))
+                .foregroundStyle(AppTheme.foreground.opacity(isEnabled ? 0.86 : 0.24))
                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         }
         .buttonStyle(.plain)
@@ -292,11 +292,11 @@ struct DecimalSettingSlider: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(title)
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.9))
+                        .foregroundStyle(AppTheme.foreground.opacity(0.9))
 
                     Text(note)
                         .font(.system(size: 12, weight: .regular))
-                        .foregroundStyle(.white.opacity(0.45))
+                        .foregroundStyle(AppTheme.foreground.opacity(0.45))
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
@@ -304,13 +304,13 @@ struct DecimalSettingSlider: View {
 
                 Text(valueText)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.84))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.84))
                     .lineLimit(1)
                     .frame(minWidth: 46, alignment: .trailing)
             }
 
             Slider(value: $value, in: range, step: step)
-                .tint(.white.opacity(0.86))
+                .tint(AppTheme.foreground.opacity(0.86))
         }
     }
 }

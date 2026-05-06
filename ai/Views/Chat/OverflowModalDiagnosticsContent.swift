@@ -19,20 +19,20 @@ struct DiagnosticsExportContent: View {
 
                     Text("This report avoids chat content and user identifiers. It includes model status, memory, thermal state, selected provider, and installed model summary.")
                         .font(.system(size: 14, weight: .regular))
-                        .foregroundStyle(.white.opacity(0.58))
+                        .foregroundStyle(AppTheme.foreground.opacity(0.58))
                         .lineSpacing(4)
                         .fixedSize(horizontal: false, vertical: true)
 
                     Text(report)
                         .font(.system(size: 12, weight: .regular, design: .monospaced))
-                        .foregroundStyle(.white.opacity(0.68))
+                        .foregroundStyle(AppTheme.foreground.opacity(0.68))
                         .lineSpacing(3)
                         .textSelection(.enabled)
                         .padding(12)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(
                             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(Color.white.opacity(0.045))
+                                .fill(AppTheme.panelFill)
                         )
 
                     Button(action: copyDiagnostics) {
@@ -40,8 +40,8 @@ struct DiagnosticsExportContent: View {
                             .font(.system(size: 15, weight: .semibold))
                             .frame(maxWidth: .infinity)
                             .frame(height: 46)
-                            .background(Color.white)
-                            .foregroundStyle(Color.black)
+                            .background(AppTheme.primaryAction)
+                            .foregroundStyle(AppTheme.primaryActionText)
                             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                     }
                     .buttonStyle(.plain)

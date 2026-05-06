@@ -24,13 +24,19 @@ struct OnboardingView: View {
                 Spacer(minLength: 24)
 
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("ai")
+                    Text(AppBrand.spacedName)
                         .font(.system(size: 42, weight: .semibold, design: .rounded))
                         .textCase(.lowercase)
 
+                    Text(AppBrand.tagline)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(AppTheme.foreground.opacity(0.52))
+                        .lineSpacing(3)
+                        .fixedSize(horizontal: false, vertical: true)
+
                     Text("Private, local-first chat on iPhone and iPad.")
                         .font(.system(size: 20, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.82))
+                        .foregroundStyle(AppTheme.foreground.opacity(0.82))
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
@@ -63,8 +69,8 @@ struct OnboardingView: View {
                         .font(.system(size: 16, weight: .semibold))
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
-                        .background(Color.white)
-                        .foregroundStyle(Color.black)
+                        .background(AppTheme.primaryAction)
+                        .foregroundStyle(AppTheme.primaryActionText)
                         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                 }
                 .buttonStyle(.plain)
@@ -74,7 +80,7 @@ struct OnboardingView: View {
             .padding(.bottom, 24)
             .frame(maxWidth: 520)
         }
-        .foregroundStyle(.white)
+        .foregroundStyle(AppTheme.foreground)
     }
 
     private func onboardingRow(icon: String, title: String, text: String) -> some View {
@@ -82,7 +88,7 @@ struct OnboardingView: View {
             Image(systemName: icon)
                 .font(.system(size: 15, weight: .semibold))
                 .frame(width: 30, height: 30)
-                .background(Color.white.opacity(0.08))
+                .background(AppTheme.foreground.opacity(0.08))
                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
 
             VStack(alignment: .leading, spacing: 4) {
@@ -91,7 +97,7 @@ struct OnboardingView: View {
 
                 Text(text)
                     .font(.system(size: 13, weight: .regular))
-                    .foregroundStyle(.white.opacity(0.52))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.52))
                     .lineSpacing(3)
                     .fixedSize(horizontal: false, vertical: true)
             }

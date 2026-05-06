@@ -146,6 +146,7 @@ struct OverflowModalView: View {
         .onChange(of: currentChatTitle) { _, newValue in
             draftTitle = newValue == "New chat" ? "" : newValue
         }
+        .preferredColorScheme(appearanceMode.colorScheme)
         .confirmationDialog(
             "Clear chat history?",
             isPresented: $isConfirmingHistoryClear,
@@ -170,7 +171,7 @@ struct OverflowModalView: View {
                 Image(systemName: "xmark")
                     .font(.system(size: 15, weight: .semibold))
                     .frame(width: 40, height: 40)
-                    .background(Color.white.opacity(0.08))
+                    .background(AppTheme.subtleFill)
                     .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
             .buttonStyle(.plain)
@@ -185,12 +186,12 @@ struct OverflowModalView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(item.title)
                 .font(.system(size: 30, weight: .semibold))
-                .foregroundStyle(.white.opacity(0.92))
+                .foregroundStyle(AppTheme.foreground.opacity(0.92))
 
             Text(item.description)
                 .font(.system(size: 16, weight: .regular))
                 .lineSpacing(4)
-                .foregroundStyle(.white.opacity(0.66))
+                .foregroundStyle(AppTheme.foreground.opacity(0.66))
         }
     }
 
@@ -211,8 +212,8 @@ struct OverflowModalView: View {
                     .frame(height: 48)
                     .background(
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .fill(Color.white.opacity(0.07))
-                            .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                            .fill(AppTheme.foreground.opacity(0.07))
+                            .stroke(AppTheme.foreground.opacity(0.12), lineWidth: 1)
                     )
 
                 HStack(spacing: 10) {
@@ -225,7 +226,7 @@ struct OverflowModalView: View {
                             .font(.system(size: 15, weight: .medium))
                             .frame(maxWidth: .infinity)
                             .frame(height: 46)
-                            .background(Color.white.opacity(0.08))
+                            .background(AppTheme.subtleFill)
                             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                     }
                     .buttonStyle(.plain)
@@ -238,8 +239,8 @@ struct OverflowModalView: View {
                             .font(.system(size: 15, weight: .semibold))
                             .frame(maxWidth: .infinity)
                             .frame(height: 46)
-                            .background(Color.white)
-                            .foregroundStyle(Color.black)
+                            .background(AppTheme.primaryAction)
+                            .foregroundStyle(AppTheme.primaryActionText)
                             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                     }
                     .buttonStyle(.plain)
@@ -255,14 +256,14 @@ struct OverflowModalView: View {
 
                 Text(hasArchivableChat ? currentChatTitle : "No messages yet")
                     .font(.system(size: 18, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.88))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.88))
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
 
                 Text(hasArchivableChat ? "Archive saves this chat in Recent chats and starts a new empty chat." : "Start a conversation first, then archive it from here.")
                     .font(.system(size: 14, weight: .regular))
                     .lineSpacing(4)
-                    .foregroundStyle(.white.opacity(0.56))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.56))
                     .fixedSize(horizontal: false, vertical: true)
 
                 Button {
@@ -272,8 +273,8 @@ struct OverflowModalView: View {
                         .font(.system(size: 15, weight: .semibold))
                         .frame(maxWidth: .infinity)
                         .frame(height: 46)
-                        .background(hasArchivableChat ? Color.white : Color.white.opacity(0.12))
-                        .foregroundStyle(hasArchivableChat ? Color.black : Color.white.opacity(0.4))
+                        .background(hasArchivableChat ? AppTheme.primaryAction : AppTheme.foreground.opacity(0.12))
+                        .foregroundStyle(hasArchivableChat ? AppTheme.primaryActionText : AppTheme.foreground.opacity(0.4))
                         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                 }
                 .buttonStyle(.plain)

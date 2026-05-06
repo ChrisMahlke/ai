@@ -55,7 +55,7 @@ struct LocalModelSettingsContent: View {
                                 .frame(height: 36)
                                 .background(
                                     RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                        .fill(mode == appearanceMode ? Color.white.opacity(0.16) : Color.white.opacity(0.055))
+                                        .fill(mode == appearanceMode ? AppTheme.elevatedFill : AppTheme.panelFill)
                                 )
                         }
                         .buttonStyle(.plain)
@@ -65,7 +65,7 @@ struct LocalModelSettingsContent: View {
 
                 Text("Light mode is intentionally restrained; high-contrast message bubbles and the local-model workflow stay unchanged.")
                     .font(.system(size: 12, weight: .regular))
-                    .foregroundStyle(.white.opacity(0.45))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.45))
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -97,11 +97,11 @@ struct LocalModelSettingsContent: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(providerStatus.title)
                         .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.88))
+                        .foregroundStyle(AppTheme.foreground.opacity(0.88))
 
                     Text(providerStatus.detail)
                         .font(.system(size: 12, weight: .regular))
-                        .foregroundStyle(.white.opacity(0.48))
+                        .foregroundStyle(AppTheme.foreground.opacity(0.48))
                         .lineSpacing(3)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -124,12 +124,12 @@ struct LocalModelSettingsContent: View {
 
                     Text(LocalModelPreset.exactMatch(for: draftSettings) == nil ? "Custom" : "Preset")
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.44))
+                        .foregroundStyle(AppTheme.foreground.opacity(0.44))
                         .padding(.horizontal, 9)
                         .frame(height: 24)
                         .background(
                             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(Color.white.opacity(0.07))
+                                .fill(AppTheme.subtleFill)
                         )
                 }
 
@@ -148,7 +148,7 @@ struct LocalModelSettingsContent: View {
 
                 Text(settingsSummary)
                     .font(.system(size: 12, weight: .regular))
-                    .foregroundStyle(.white.opacity(0.45))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.45))
                     .fixedSize(horizontal: false, vertical: true)
 
                 Button {
@@ -165,15 +165,15 @@ struct LocalModelSettingsContent: View {
 
                         Text(recommendation.reason)
                             .font(.system(size: 11, weight: .regular))
-                            .foregroundStyle(.white.opacity(0.44))
+                            .foregroundStyle(AppTheme.foreground.opacity(0.44))
                             .lineLimit(1)
                     }
-                    .foregroundStyle(.white.opacity(0.78))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.78))
                     .padding(.horizontal, 12)
                     .frame(height: 38)
                     .background(
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .fill(Color.white.opacity(0.06))
+                            .fill(AppTheme.panelFill)
                     )
                 }
                 .buttonStyle(.plain)
@@ -222,7 +222,7 @@ struct LocalModelSettingsContent: View {
                             .font(.system(size: 14, weight: .semibold))
                             .frame(maxWidth: .infinity)
                             .frame(height: 42)
-                            .background(Color.white.opacity(0.1))
+                            .background(AppTheme.elevatedFill)
                             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                     }
                     .buttonStyle(.plain)
@@ -232,7 +232,7 @@ struct LocalModelSettingsContent: View {
                             .font(.system(size: 14, weight: .semibold))
                             .frame(maxWidth: .infinity)
                             .frame(height: 42)
-                            .background(Color.white.opacity(0.1))
+                            .background(AppTheme.elevatedFill)
                             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                     }
                     .buttonStyle(.plain)
@@ -366,7 +366,7 @@ struct LocalModelSettingsContent: View {
                     .font(.system(size: 15, weight: .medium))
                     .frame(maxWidth: .infinity)
                     .frame(height: 46)
-                    .background(Color.white.opacity(0.08))
+                    .background(AppTheme.subtleFill)
                     .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
             .buttonStyle(.plain)
@@ -380,8 +380,8 @@ struct LocalModelSettingsContent: View {
                     .font(.system(size: 15, weight: .semibold))
                     .frame(maxWidth: .infinity)
                     .frame(height: 46)
-                    .background(hasChanges ? Color.white : Color.white.opacity(0.14))
-                    .foregroundStyle(hasChanges ? Color.black : Color.white.opacity(0.52))
+                    .background(hasChanges ? AppTheme.primaryAction : AppTheme.foreground.opacity(0.14))
+                    .foregroundStyle(hasChanges ? AppTheme.primaryActionText : AppTheme.foreground.opacity(0.52))
                     .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
             .buttonStyle(.plain)
@@ -399,11 +399,11 @@ struct LocalModelSettingsContent: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Chat history")
                             .font(.system(size: 15, weight: .medium))
-                            .foregroundStyle(.white.opacity(0.9))
+                            .foregroundStyle(AppTheme.foreground.opacity(0.9))
 
                         Text("Remove the saved current chat and recent chat list from this device.")
                             .font(.system(size: 12, weight: .regular))
-                            .foregroundStyle(.white.opacity(0.45))
+                            .foregroundStyle(AppTheme.foreground.opacity(0.45))
                             .fixedSize(horizontal: false, vertical: true)
                     }
 

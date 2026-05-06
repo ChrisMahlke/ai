@@ -15,7 +15,7 @@ struct ChatSearchBarView: View {
         HStack(spacing: 9) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(.white.opacity(0.38))
+                .foregroundStyle(AppTheme.foreground.opacity(0.38))
 
             TextField("Search this chat", text: $query)
                 .font(.system(size: 14, weight: .regular))
@@ -26,7 +26,7 @@ struct ChatSearchBarView: View {
             if !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 Text(matchCount == 1 ? "1 match" : "\(matchCount) matches")
                     .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.42))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.42))
                     .lineLimit(1)
                     .accessibilityLabel(matchCount == 1 ? "1 search match" : "\(matchCount) search matches")
 
@@ -35,19 +35,19 @@ struct ChatSearchBarView: View {
                 } label: {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.36))
+                        .foregroundStyle(AppTheme.foreground.opacity(0.36))
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Clear chat search")
             }
         }
-        .foregroundStyle(.white.opacity(0.84))
+        .foregroundStyle(AppTheme.foreground.opacity(0.84))
         .padding(.horizontal, 14)
         .frame(height: 40)
         .background(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(Color.white.opacity(0.055))
-                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                .fill(AppTheme.foreground.opacity(0.055))
+                .stroke(AppTheme.foreground.opacity(0.08), lineWidth: 1)
         )
         .padding(.horizontal, 18)
         .padding(.top, 8)

@@ -13,12 +13,12 @@ struct HelpSummaryPanel: View {
             VStack(alignment: .leading, spacing: 10) {
                 Text("What this app is")
                     .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.92))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.92))
 
                 Text("A minimal chat app built around local-first AI. The default path runs an open-weight model inside the app process so the phone can answer without a server request. The architecture also supports an optional Gemini provider when a cloud model is selected.")
                     .font(.system(size: 15, weight: .regular))
                     .lineSpacing(4)
-                    .foregroundStyle(.white.opacity(0.62))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.62))
                     .fixedSize(horizontal: false, vertical: true)
 
                 HStack(spacing: 8) {
@@ -122,12 +122,12 @@ struct HelpPanel: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(title)
                     .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.9))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.9))
 
                 Text(text)
                     .font(.system(size: 15, weight: .regular))
                     .lineSpacing(4)
-                    .foregroundStyle(.white.opacity(0.62))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.62))
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -178,20 +178,20 @@ private struct HelpStepRow: View {
         HStack(alignment: .top, spacing: 12) {
             Text("\(number)")
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(.black.opacity(0.74))
+                    .foregroundStyle(AppTheme.primaryActionText.opacity(0.74))
                 .frame(width: 24, height: 24)
-                .background(Color.white.opacity(0.86))
+                .background(AppTheme.primaryAction.opacity(0.86))
                 .clipShape(Circle())
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.88))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.88))
 
                 Text(text)
                     .font(.system(size: 13, weight: .regular))
                     .lineSpacing(3)
-                    .foregroundStyle(.white.opacity(0.52))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.52))
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -206,12 +206,12 @@ private struct HelpDefinitionRow: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(term)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(.white.opacity(0.84))
+                .foregroundStyle(AppTheme.foreground.opacity(0.84))
 
             Text(definition)
                 .font(.system(size: 13, weight: .regular))
                 .lineSpacing(3)
-                .foregroundStyle(.white.opacity(0.52))
+                .foregroundStyle(AppTheme.foreground.opacity(0.52))
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
@@ -223,10 +223,10 @@ private struct HelpBadge: View {
     var body: some View {
         Text(text)
             .font(.system(size: 11, weight: .semibold))
-            .foregroundStyle(.white.opacity(0.76))
+            .foregroundStyle(AppTheme.foreground.opacity(0.76))
             .padding(.horizontal, 9)
             .frame(height: 26)
-            .background(Color.white.opacity(0.08))
+            .background(AppTheme.subtleFill)
             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 }

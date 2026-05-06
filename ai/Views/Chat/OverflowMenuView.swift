@@ -18,7 +18,7 @@ struct OverflowMenuView: View {
                 } label: {
                     Text(item.title)
                         .font(.system(size: 15, weight: .regular))
-                        .foregroundStyle(.white.opacity(0.88))
+                        .foregroundStyle(AppTheme.foreground.opacity(0.88))
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .frame(height: 40)
                         .padding(.horizontal, 12)
@@ -31,8 +31,8 @@ struct OverflowMenuView: View {
         .background(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .fill(AppTheme.menuBackground)
-                .stroke(Color.white.opacity(0.12), lineWidth: 1)
-                .shadow(color: .black.opacity(0.34), radius: 18, y: 10)
+                .stroke(AppTheme.foreground.opacity(0.12), lineWidth: 1)
+                .shadow(color: AppTheme.composerShadow, radius: 18, y: 10)
         )
     }
 }

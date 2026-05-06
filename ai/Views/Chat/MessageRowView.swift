@@ -32,13 +32,13 @@ struct MessageRowView: View {
                     isUser: isUser,
                     searchQuery: searchQuery
                 )
-                    .foregroundStyle(isUser ? .black : .white.opacity(0.9))
+                    .foregroundStyle(isUser ? AppTheme.primaryActionText : AppTheme.foreground.opacity(0.9))
                     .padding(.horizontal, isUser ? 15 : 0)
                     .padding(.vertical, isUser ? 12 : 0)
                     .background {
                         if isUser {
                             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(Color.white.opacity(0.92))
+                                .fill(AppTheme.primaryAction.opacity(0.92))
                         }
                     }
                     .textSelection(.enabled)
@@ -75,7 +75,7 @@ struct MessageRowView: View {
                     .accessibilityLabel(isUser ? "Your message" : "Assistant response")
 
                 if message.state == .stopped {
-                    stateBadge("Stopped", foreground: .white.opacity(0.42), background: .white.opacity(0.055))
+                    stateBadge("Stopped", foreground: AppTheme.foreground.opacity(0.42), background: AppTheme.panelFill)
                 } else if message.state == .failed {
                     stateBadge("Failed", foreground: .red.opacity(0.78), background: .red.opacity(0.1))
                 }
@@ -120,7 +120,7 @@ private struct MessageContentView: View {
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
                         Text(marker)
                             .font(.system(size: 15, weight: .medium))
-                            .foregroundStyle(isUser ? .black.opacity(0.62) : .white.opacity(0.48))
+                            .foregroundStyle(isUser ? AppTheme.primaryActionText.opacity(0.62) : AppTheme.foreground.opacity(0.48))
 
                         inlineText(value)
                     }
@@ -131,14 +131,14 @@ private struct MessageContentView: View {
                         query: searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
                     ))
                         .font(.system(size: 14, weight: .regular, design: .monospaced))
-                        .foregroundStyle(isUser ? .black.opacity(0.82) : .white.opacity(0.82))
+                        .foregroundStyle(isUser ? AppTheme.primaryActionText.opacity(0.82) : AppTheme.foreground.opacity(0.82))
                         .lineSpacing(3)
                         .padding(12)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(
                             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(isUser ? Color.black.opacity(0.06) : Color.white.opacity(0.055))
-                                .stroke(isUser ? Color.black.opacity(0.08) : Color.white.opacity(0.09), lineWidth: 1)
+                                .fill(isUser ? AppTheme.primaryActionText.opacity(0.08) : AppTheme.panelFill)
+                                .stroke(isUser ? AppTheme.primaryActionText.opacity(0.10) : AppTheme.panelStroke, lineWidth: 1)
                         )
                 }
             }
@@ -170,7 +170,7 @@ private struct MessageContentView: View {
 
         let nsValue = value as NSString
         var searchRange = NSRange(location: 0, length: nsValue.length)
-        let background = isUser ? UIColor.black.withAlphaComponent(0.1) : UIColor.white.withAlphaComponent(0.18)
+        let background = isUser ? UIColor.systemBackground.withAlphaComponent(0.22) : UIColor.label.withAlphaComponent(0.12)
 
         while searchRange.location < nsValue.length {
             let foundRange = nsValue.range(

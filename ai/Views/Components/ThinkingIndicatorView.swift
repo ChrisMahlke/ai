@@ -14,7 +14,7 @@ struct ThinkingIndicatorView: View {
         HStack(spacing: 7) {
             ForEach(0..<3, id: \.self) { index in
                 Circle()
-                    .fill(Color.white.opacity(0.74))
+                    .fill(AppTheme.foreground.opacity(0.74))
                     .frame(width: 7, height: 7)
                     .scaleEffect(isAnimating ? 1.0 : 0.58)
                     .opacity(isAnimating ? 0.92 : 0.32)
@@ -30,8 +30,8 @@ struct ThinkingIndicatorView: View {
         .padding(.vertical, 12)
         .background(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(Color.white.opacity(0.075))
-                .stroke(Color.white.opacity(0.11), lineWidth: 1)
+                .fill(AppTheme.foreground.opacity(0.075))
+                .stroke(AppTheme.foreground.opacity(0.11), lineWidth: 1)
         )
         .onAppear {
             isAnimating = true

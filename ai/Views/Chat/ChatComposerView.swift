@@ -43,7 +43,7 @@ struct ChatComposerView: View {
             HStack(spacing: 10) {
                 Text(statusText)
                     .font(.system(size: 11))
-                    .foregroundStyle(.white.opacity(0.38))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.46))
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
 
@@ -52,11 +52,11 @@ struct ChatComposerView: View {
                         Image(systemName: "arrow.clockwise")
                             .font(.system(size: 12, weight: .semibold))
                             .frame(width: 28, height: 24)
-                            .background(Color.white.opacity(0.07))
+                            .background(AppTheme.subtleFill)
                             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                     }
                     .buttonStyle(.plain)
-                    .foregroundStyle(.white.opacity(0.52))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.58))
                     .accessibilityLabel("Regenerate last response")
                     .accessibilityHint("Runs the last user message again with current settings")
                 }
@@ -69,24 +69,24 @@ struct ChatComposerView: View {
         .background(
             Rectangle()
                 .fill(AppTheme.background)
-                .shadow(color: .black.opacity(0.28), radius: 16, y: -8)
+                .shadow(color: AppTheme.composerShadow, radius: 16, y: -8)
         )
     }
 
     private var buttonBackground: Color {
         if isResponseActive {
-            return Color.white.opacity(0.88)
+            return AppTheme.primaryAction.opacity(0.88)
         }
 
-        return canSend ? Color.white : Color.white.opacity(0.12)
+        return canSend ? AppTheme.primaryAction : AppTheme.foreground.opacity(0.12)
     }
 
     private var buttonForeground: Color {
         if isResponseActive {
-            return Color.black
+            return AppTheme.primaryActionText
         }
 
-        return canSend ? Color.black : Color.white.opacity(0.4)
+        return canSend ? AppTheme.primaryActionText : AppTheme.foreground.opacity(0.4)
     }
 
     private var statusText: String {
@@ -116,7 +116,7 @@ struct ChatComposerView: View {
             if prompt.isEmpty {
                 Text("Message")
                     .font(.system(size: 16, weight: .regular))
-                    .foregroundStyle(.white.opacity(0.38))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.42))
                     .allowsHitTesting(false)
             }
 
@@ -133,8 +133,8 @@ struct ChatComposerView: View {
         .padding(.vertical, 13)
         .background(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(Color.white.opacity(0.075))
-                .stroke(Color.white.opacity(0.14), lineWidth: 1)
+                .fill(AppTheme.subtleFill)
+                .stroke(AppTheme.panelStroke, lineWidth: 1)
         )
     }
 }

@@ -16,19 +16,19 @@ struct ModelLoadingView: View {
             HStack {
                 Text(message)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.66))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.66))
                     .lineLimit(1)
 
                 Spacer()
 
                 Text("\(Int(progress * 100))%")
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.42))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.42))
             }
 
             ProgressView(value: progress)
                 .progressViewStyle(.linear)
-                .tint(.white.opacity(0.82))
+                .tint(AppTheme.foreground.opacity(0.82))
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 10)

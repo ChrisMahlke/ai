@@ -60,7 +60,7 @@ struct PromptLibraryView: View {
                 .scrollIndicators(.hidden)
             }
         }
-        .foregroundStyle(.white)
+        .foregroundStyle(AppTheme.foreground)
     }
 
     private var header: some View {
@@ -71,7 +71,7 @@ struct PromptLibraryView: View {
 
                 Text("Reusable local templates")
                     .font(.system(size: 13, weight: .regular))
-                    .foregroundStyle(.white.opacity(0.48))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.48))
             }
 
             Spacer()
@@ -82,7 +82,7 @@ struct PromptLibraryView: View {
                 Image(systemName: isAddingTemplate ? "minus" : "plus")
                     .font(.system(size: 15, weight: .semibold))
                     .frame(width: 38, height: 38)
-                    .background(Color.white.opacity(0.08))
+                    .background(AppTheme.foreground.opacity(0.08))
                     .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
             .buttonStyle(.plain)
@@ -92,7 +92,7 @@ struct PromptLibraryView: View {
                 Image(systemName: "xmark")
                     .font(.system(size: 15, weight: .semibold))
                     .frame(width: 38, height: 38)
-                    .background(Color.white.opacity(0.08))
+                    .background(AppTheme.foreground.opacity(0.08))
                     .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
             .buttonStyle(.plain)
@@ -107,7 +107,7 @@ struct PromptLibraryView: View {
         HStack(spacing: 9) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(.white.opacity(0.38))
+                .foregroundStyle(AppTheme.foreground.opacity(0.38))
 
             TextField("Search prompts", text: $searchText)
                 .font(.system(size: 14, weight: .regular))
@@ -120,7 +120,7 @@ struct PromptLibraryView: View {
                 } label: {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.36))
+                        .foregroundStyle(AppTheme.foreground.opacity(0.36))
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Clear prompt search")
@@ -130,8 +130,8 @@ struct PromptLibraryView: View {
         .frame(height: 40)
         .background(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(Color.white.opacity(0.055))
-                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                .fill(AppTheme.foreground.opacity(0.055))
+                .stroke(AppTheme.foreground.opacity(0.08), lineWidth: 1)
         )
     }
 
@@ -161,8 +161,8 @@ struct PromptLibraryView: View {
                     .font(.system(size: 15, weight: .semibold))
                     .frame(maxWidth: .infinity)
                     .frame(height: 44)
-                    .background(canSaveDraft ? Color.white : Color.white.opacity(0.12))
-                    .foregroundStyle(canSaveDraft ? Color.black : Color.white.opacity(0.42))
+                    .background(canSaveDraft ? AppTheme.primaryAction : AppTheme.foreground.opacity(0.12))
+                    .foregroundStyle(canSaveDraft ? AppTheme.primaryActionText : AppTheme.foreground.opacity(0.42))
                     .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
             .buttonStyle(.plain)
@@ -171,8 +171,8 @@ struct PromptLibraryView: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(Color.white.opacity(0.052))
-                .stroke(Color.white.opacity(0.09), lineWidth: 1)
+                .fill(AppTheme.foreground.opacity(0.052))
+                .stroke(AppTheme.foreground.opacity(0.09), lineWidth: 1)
         )
     }
 
@@ -181,7 +181,7 @@ struct PromptLibraryView: View {
             if filteredTemplates.isEmpty {
                 Text("No prompts found")
                     .font(.system(size: 14, weight: .regular))
-                    .foregroundStyle(.white.opacity(0.4))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.4))
                     .padding(.vertical, 16)
                     .frame(maxWidth: .infinity, alignment: .leading)
             } else {
@@ -199,28 +199,28 @@ struct PromptLibraryView: View {
             HStack(alignment: .top, spacing: 12) {
                 Image(systemName: template.isBuiltIn ? "bookmark" : "bookmark.fill")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.42))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.42))
                     .frame(width: 24, height: 24)
 
                 VStack(alignment: .leading, spacing: 5) {
                     HStack(spacing: 8) {
                         Text(template.title)
                             .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(.white.opacity(0.9))
+                            .foregroundStyle(AppTheme.foreground.opacity(0.9))
                             .lineLimit(1)
 
                         Text(template.category)
                             .font(.system(size: 10, weight: .semibold))
-                            .foregroundStyle(.white.opacity(0.42))
+                            .foregroundStyle(AppTheme.foreground.opacity(0.42))
                             .padding(.horizontal, 7)
                             .frame(height: 20)
-                            .background(Color.white.opacity(0.07))
+                            .background(AppTheme.foreground.opacity(0.07))
                             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                     }
 
                     Text(template.text)
                         .font(.system(size: 13, weight: .regular))
-                        .foregroundStyle(.white.opacity(0.5))
+                        .foregroundStyle(AppTheme.foreground.opacity(0.5))
                         .lineLimit(3)
                 }
 
@@ -230,7 +230,7 @@ struct PromptLibraryView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(Color.white.opacity(0.045))
+                    .fill(AppTheme.foreground.opacity(0.045))
             )
         }
         .buttonStyle(.plain)
@@ -249,7 +249,7 @@ struct PromptLibraryView: View {
 
     private var fieldBackground: some View {
         RoundedRectangle(cornerRadius: 8, style: .continuous)
-            .fill(Color.white.opacity(0.07))
-            .stroke(Color.white.opacity(0.11), lineWidth: 1)
+            .fill(AppTheme.foreground.opacity(0.07))
+            .stroke(AppTheme.foreground.opacity(0.11), lineWidth: 1)
     }
 }

@@ -19,7 +19,8 @@ struct ChatHeaderView: View {
             Button(action: openMenu) {
                 Image(systemName: "line.3.horizontal")
                     .font(.system(size: 18, weight: .medium))
-                    .frame(width: 36, height: 36)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Open menu")
@@ -29,14 +30,15 @@ struct ChatHeaderView: View {
                 .font(.system(size: 16, weight: .medium))
                 .lineLimit(1)
                 .truncationMode(.tail)
-                .foregroundStyle(.white.opacity(0.86))
+                .foregroundStyle(AppTheme.foreground.opacity(0.86))
 
             Spacer()
 
             Button(action: startNewChat) {
                 Image(systemName: "square.and.pencil")
                     .font(.system(size: 17, weight: .medium))
-                    .frame(width: 34, height: 36)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Start new chat")
@@ -45,7 +47,8 @@ struct ChatHeaderView: View {
             Button(action: shareChat) {
                 Image(systemName: "square.and.arrow.up")
                     .font(.system(size: 17, weight: .medium))
-                    .frame(width: 34, height: 36)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Share chat")
@@ -54,14 +57,15 @@ struct ChatHeaderView: View {
             Button(action: toggleOverflow) {
                 Image(systemName: "ellipsis")
                     .font(.system(size: 18, weight: .semibold))
-                    .frame(width: 34, height: 36)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel("More options")
         }
-        .padding(.horizontal, 12)
-        .padding(.top, 10)
-        .padding(.bottom, 8)
+        .padding(.horizontal, 8)
+        .padding(.top, 6)
+        .padding(.bottom, 4)
         .background(AppTheme.background)
     }
 }

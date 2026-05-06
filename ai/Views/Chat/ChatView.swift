@@ -56,7 +56,7 @@ struct ChatView: View {
                 )
             }
         }
-        .foregroundStyle(.white)
+        .foregroundStyle(AppTheme.foreground)
         .task {
             await viewModel.loadBackendIfNeeded()
         }
@@ -99,6 +99,7 @@ struct ChatView: View {
                 save: viewModel.savePromptTemplate,
                 delete: viewModel.deletePromptTemplate
             )
+            .preferredColorScheme(viewModel.appearanceMode.colorScheme)
         }
         .sheet(item: $viewModel.sharePayload) { payload in
             ShareSheet(items: [payload.text])
@@ -108,6 +109,7 @@ struct ChatView: View {
                 installedModels: viewModel.installedModels,
                 complete: viewModel.completeOnboarding
             )
+            .preferredColorScheme(viewModel.appearanceMode.colorScheme)
         }
         .preferredColorScheme(viewModel.appearanceMode.colorScheme)
     }
@@ -208,7 +210,7 @@ private struct DrawerOverlay: View {
 
     var body: some View {
         ZStack(alignment: .leading) {
-            Color.black.opacity(0.44)
+            AppTheme.scrim
                 .ignoresSafeArea()
                 .onTapGesture(perform: close)
 

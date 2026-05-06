@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ChatHistorySnapshot: Codable, Equatable, Sendable {
+nonisolated struct ChatHistorySnapshot: Codable, Equatable, Sendable {
     let currentChatID: UUID
     let currentTitleOverride: String?
     let currentMessages: [ChatMessage]

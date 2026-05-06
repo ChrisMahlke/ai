@@ -114,6 +114,16 @@ extension ChatViewModel {
         chatSearchActiveMessageID = chatSearchResultMessageIDs.first
     }
 
+    func updateChatSearchQuery(_ query: String) {
+        chatSearchQuery = query
+        Task { @MainActor [weak self] in
+            await Task.yield()
+            guard let self, self.chatSearchQuery == query else { return }
+
+            self.chatSearchActiveMessageID = self.chatSearchResultMessageIDs.first
+        }
+    }
+
     func jumpToNextSearchResult() {
         jumpSearchResult(direction: 1)
     }

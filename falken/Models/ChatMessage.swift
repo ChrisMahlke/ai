@@ -7,13 +7,13 @@
 
 import Foundation
 
-struct ChatMessage: Identifiable, Equatable, Codable, Sendable {
-    enum Role: Equatable, Codable, Sendable {
+nonisolated struct ChatMessage: Identifiable, Equatable, Codable, Sendable {
+    nonisolated enum Role: Equatable, Codable, Sendable {
         case user
         case assistant
     }
 
-    enum State: Equatable, Codable, Sendable {
+    nonisolated enum State: Equatable, Codable, Sendable {
         case streaming
         case complete
         case stopped

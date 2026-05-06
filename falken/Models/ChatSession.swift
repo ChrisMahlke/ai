@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ChatSession: Identifiable, Equatable, Codable, Sendable {
+nonisolated struct ChatSession: Identifiable, Equatable, Codable, Sendable {
     let id: UUID
     let title: String
     let messages: [ChatMessage]

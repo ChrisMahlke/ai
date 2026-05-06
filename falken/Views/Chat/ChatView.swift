@@ -58,10 +58,14 @@ struct ChatView: View {
         }
         .foregroundStyle(AppTheme.foreground)
         .task {
+            await Task.yield()
             await viewModel.loadBackendIfNeeded()
         }
         .onDisappear {
-            viewModel.cancelActiveResponse()
+            Task { @MainActor in
+                await Task.yield()
+                viewModel.cancelActiveResponse()
+            }
         }
         .animation(.spring(response: reduceMotion ? 0.01 : 0.34, dampingFraction: 0.86), value: viewModel.isDrawerOpen)
         .animation(.spring(response: reduceMotion ? 0.01 : 0.34, dampingFraction: 0.86), value: viewModel.isSidebarCollapsed)
@@ -148,7 +152,10 @@ struct ChatView: View {
 
             if !viewModel.messages.isEmpty {
                 ChatSearchBarView(
-                    query: $viewModel.chatSearchQuery,
+                    query: Binding(
+                        get: { viewModel.chatSearchQuery },
+                        set: { viewModel.updateChatSearchQuery($0) }
+                    ),
                     matchCount: viewModel.chatSearchMatchCount,
                     positionText: viewModel.chatSearchPositionText,
                     canNavigate: viewModel.chatSearchResultMessageIDs.count > 1,
@@ -182,9 +189,6 @@ struct ChatView: View {
                 stop: { viewModel.stopGeneration() },
                 regenerate: viewModel.regenerateLastResponse
             )
-        }
-        .onChange(of: viewModel.chatSearchQuery) { _, _ in
-            viewModel.resetChatSearchNavigation()
         }
     }
 }

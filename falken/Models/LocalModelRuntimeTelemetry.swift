@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct LocalModelRuntimeTelemetry: Codable, Equatable, Sendable {
+nonisolated struct LocalModelRuntimeTelemetry: Codable, Equatable, Sendable {
     var appMemoryBeforeLoadBytes: UInt64?
     var appMemoryAfterLoadBytes: UInt64?
     var peakGenerationMemoryBytes: UInt64?

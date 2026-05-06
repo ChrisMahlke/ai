@@ -11,11 +11,11 @@ struct LocalInferenceTelemetryStore {
     private let key = "localInferenceTelemetry.v1"
     private let defaults: UserDefaults
 
-    init(defaults: UserDefaults = .standard) {
+    nonisolated init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
     }
 
-    func load() -> LocalModelRuntimeTelemetry {
+    nonisolated func load() -> LocalModelRuntimeTelemetry {
         guard let data = defaults.data(forKey: key),
               let telemetry = try? JSONDecoder().decode(LocalModelRuntimeTelemetry.self, from: data) else {
             return .empty
@@ -24,13 +24,13 @@ struct LocalInferenceTelemetryStore {
         return telemetry
     }
 
-    func save(_ telemetry: LocalModelRuntimeTelemetry) {
+    nonisolated func save(_ telemetry: LocalModelRuntimeTelemetry) {
         guard let data = try? JSONEncoder().encode(telemetry) else { return }
 
         defaults.set(data, forKey: key)
     }
 
-    func clear() {
+    nonisolated func clear() {
         defaults.removeObject(forKey: key)
     }
 }

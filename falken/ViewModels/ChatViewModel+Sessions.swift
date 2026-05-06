@@ -17,12 +17,13 @@ extension ChatViewModel {
     }
 
     func archiveCurrentChatAndStartNew() {
+        AppHaptics.selection()
         guard hasArchivableChat else {
             dismissOverflowModal()
             return
         }
 
-        stopGeneration()
+        stopGeneration(triggerHaptic: false)
         archiveCurrentChat()
         currentChatID = UUID()
         currentTitleOverride = nil
@@ -60,7 +61,7 @@ extension ChatViewModel {
     }
 
     func clearChatHistory() {
-        stopGeneration()
+        stopGeneration(triggerHaptic: false)
         currentChatID = UUID()
         currentTitleOverride = nil
         messages = []
@@ -73,7 +74,8 @@ extension ChatViewModel {
     }
 
     func startNewChat() {
-        stopGeneration()
+        AppHaptics.selection()
+        stopGeneration(triggerHaptic: false)
         archiveCurrentChat()
 
         currentChatID = UUID()
@@ -97,7 +99,8 @@ extension ChatViewModel {
             return
         }
 
-        stopGeneration()
+        AppHaptics.selection()
+        stopGeneration(triggerHaptic: false)
         archiveCurrentChat()
 
         currentChatID = chat.id

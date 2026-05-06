@@ -30,18 +30,15 @@ struct ModelManagementContent: View {
                 VStack(alignment: .leading, spacing: 10) {
                     SectionTitle("Install")
 
-                    Text("Add GGUF files to `falken/Models`, include them in the app target, then rebuild. Keep only the models you need in the target because each bundled model increases app size and memory pressure.")
+                    Text("Add one GGUF file to falken/Models, include it in the falken app target, then rebuild. Keep only the models you need in the target because every bundled model increases app size and memory pressure.")
                         .font(.system(size: 14, weight: .regular))
                         .foregroundStyle(AppTheme.foreground.opacity(0.58))
                         .lineSpacing(4)
                         .fixedSize(horizontal: false, vertical: true)
 
-                    VStack(alignment: .leading, spacing: 6) {
+                    VStack(alignment: .leading, spacing: 10) {
                         ForEach(LocalModelProfile.allCases) { profile in
-                            Text(profile.installationNote)
-                                .font(.system(size: 12, weight: .regular, design: .monospaced))
-                                .foregroundStyle(AppTheme.foreground.opacity(0.44))
-                                .fixedSize(horizontal: false, vertical: true)
+                            installHelperRow(profile)
                         }
                     }
                 }
@@ -107,6 +104,54 @@ struct ModelManagementContent: View {
                 .fill(isActive ? AppTheme.elevatedFill : AppTheme.panelFill)
                 .stroke(isActive ? AppTheme.panelStroke.opacity(1.35) : AppTheme.panelStroke.opacity(0.75), lineWidth: 1)
         )
+    }
+
+    private func installHelperRow(_ profile: LocalModelProfile) -> some View {
+        let resource = profile.resource
+
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(profile.title)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.78))
+
+                Spacer()
+
+                Text(profile == .smallFast ? "Recommended" : "Higher memory")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.46))
+            }
+
+            installHelperValue("Filename", resource.fileName)
+            installHelperValue("Expected size", expectedSizeRange(resource))
+            installHelperValue("Folder", "falken/Models")
+            installHelperValue("Target membership", "falken")
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(AppTheme.subtleFill)
+                .stroke(AppTheme.panelStroke.opacity(0.75), lineWidth: 1)
+        )
+    }
+
+    private func installHelperValue(_ label: String, _ value: String) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(label)
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundStyle(AppTheme.foreground.opacity(0.4))
+
+            Text(value)
+                .font(.system(size: 11, weight: .regular, design: .monospaced))
+                .foregroundStyle(AppTheme.foreground.opacity(0.62))
+                .lineLimit(2)
+                .minimumScaleFactor(0.78)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func expectedSizeRange(_ resource: LocalModelResource) -> String {
+        "\(byteString(resource.minimumFileSizeBytes)) - \(byteString(resource.maximumFileSizeBytes))"
     }
 
     private func byteString(_ bytes: UInt64) -> String {

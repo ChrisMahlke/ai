@@ -51,10 +51,12 @@ final class ChatViewModel: ObservableObject {
     let appearanceStore: AppAppearanceStore
     let onboardingStore: OnboardingStore
     var responseTask: Task<Void, Never>?
+    var generationTimeoutTask: Task<Void, Never>?
     var pendingHistorySaveTask: Task<Void, Never>?
     var generationStartedAt: Date?
     var cancellables: Set<AnyCancellable> = []
     let historyPolicy: ChatHistoryPolicy
+    let generationTimeoutNanoseconds: UInt64 = 120_000_000_000
 
     init(
         historyStore: ChatHistoryStore? = nil,
@@ -127,6 +129,7 @@ final class ChatViewModel: ObservableObject {
 
     deinit {
         responseTask?.cancel()
+        generationTimeoutTask?.cancel()
         pendingHistorySaveTask?.cancel()
     }
 

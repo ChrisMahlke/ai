@@ -12,6 +12,7 @@ extension ChatViewModel {
     func useSuggestedPrompt(_ text: String) {
         guard !isResponseActive else { return }
 
+        AppHaptics.selection()
         prompt = text
         isComposerFocused = true
     }
@@ -20,6 +21,7 @@ extension ChatViewModel {
         let trimmedPrompt = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedPrompt.isEmpty, !isResponseActive else { return }
 
+        AppHaptics.lightImpact()
         isComposerFocused = false
         messages.append(ChatMessage(role: .user, text: trimmedPrompt))
         trimVisibleMessagesIfNeeded()
@@ -32,6 +34,7 @@ extension ChatViewModel {
     func regenerateLastResponse() {
         guard canRegenerate, let lastUserIndex = messages.lastIndex(where: { $0.role == .user }) else { return }
 
+        AppHaptics.lightImpact()
         isComposerFocused = false
         let lastPrompt = messages[lastUserIndex].text
         messages = Array(messages.prefix(lastUserIndex + 1))
@@ -88,7 +91,14 @@ extension ChatViewModel {
         let responder = activeResponder
 
         responseTask?.cancel()
+        cancelGenerationTimeout()
         localAIManager?.cancelGeneration()
+        generationTimeoutTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: self?.generationTimeoutNanoseconds ?? 120_000_000_000)
+            guard !Task.isCancelled else { return }
+
+            self?.recoverTimedOutGeneration(chatID: chatID)
+        }
         responseTask = Task { [weak self, responder] in
             guard let self else { return }
 
@@ -115,17 +125,26 @@ extension ChatViewModel {
         }
     }
 
-    func stopGeneration() {
+    func stopGeneration(triggerHaptic: Bool = true) {
         let shouldMarkStopped = isResponseActive
+        if shouldMarkStopped, triggerHaptic {
+            AppHaptics.stop()
+        }
         localAIManager?.cancelGeneration()
         responseTask?.cancel()
         responseTask = nil
+        cancelGenerationTimeout()
         setRuntimeState(.idle)
+        generationStartedAt = nil
+        isComposerFocused = true
 
         if messages.last?.role == .assistant, messages.last?.text.isEmpty == true {
-            messages.removeLast()
+            messages[messages.count - 1].text = "Stopped."
+            messages[messages.count - 1].state = .stopped
         } else if shouldMarkStopped, messages.last?.role == .assistant {
             messages[messages.count - 1].state = .stopped
+        } else if shouldMarkStopped {
+            messages.append(ChatMessage(role: .assistant, text: "Stopped.", state: .stopped))
         }
 
         trimVisibleMessagesIfNeeded()
@@ -133,7 +152,7 @@ extension ChatViewModel {
     }
 
     func cancelActiveResponse() {
-        stopGeneration()
+        stopGeneration(triggerHaptic: false)
     }
 
     func beginAssistantResponse(id: UUID, chatID: UUID) {
@@ -160,6 +179,7 @@ extension ChatViewModel {
     func finishAssistantResponse(chatID: UUID) {
         guard chatID == currentChatID else { return }
         responseTask = nil
+        cancelGenerationTimeout()
         setRuntimeState(.idle)
         generationStartedAt = nil
         trimVisibleMessagesIfNeeded()
@@ -169,6 +189,7 @@ extension ChatViewModel {
     func finishCancelledOrEmptyResponse(chatID: UUID) {
         guard chatID == currentChatID else { return }
         responseTask = nil
+        cancelGenerationTimeout()
         setRuntimeState(.idle)
         generationStartedAt = nil
         scheduleHistorySave()
@@ -187,5 +208,35 @@ extension ChatViewModel {
         guard chatID == currentChatID else { return "" }
 
         return messages.last { $0.role == .user }?.text ?? ""
+    }
+
+    func cancelGenerationTimeout() {
+        generationTimeoutTask?.cancel()
+        generationTimeoutTask = nil
+    }
+
+    func recoverTimedOutGeneration(chatID: UUID) {
+        guard chatID == currentChatID, isResponseActive else { return }
+
+        localAIManager?.cancelGeneration()
+        responseTask?.cancel()
+        responseTask = nil
+        generationTimeoutTask = nil
+        generationStartedAt = nil
+        backendNotice = "Generation timed out. Try a shorter prompt or Efficient settings."
+        setRuntimeState(.idle)
+        isComposerFocused = true
+
+        if messages.last?.role == .assistant {
+            if messages[messages.count - 1].text.isEmpty {
+                messages[messages.count - 1].text = "Generation timed out."
+            }
+            messages[messages.count - 1].state = .failed
+        } else {
+            messages.append(ChatMessage(role: .assistant, text: "Generation timed out.", state: .failed))
+        }
+
+        trimVisibleMessagesIfNeeded()
+        scheduleHistorySave()
     }
 }

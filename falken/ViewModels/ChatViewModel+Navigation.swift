@@ -10,25 +10,30 @@ import Foundation
 @MainActor
 extension ChatViewModel {
     func openModelSettings() {
+        AppHaptics.selection()
         isOverflowOpen = false
         isComposerFocused = false
         presentedOverflowItem = .settings
     }
 
     func openDrawer() {
+        AppHaptics.selection()
         isComposerFocused = false
         isDrawerOpen = true
     }
 
     func closeDrawer() {
+        AppHaptics.selection()
         isDrawerOpen = false
     }
 
     func togglePersistentSidebar() {
+        AppHaptics.selection()
         isSidebarCollapsed.toggle()
     }
 
     func toggleOverflowMenu() {
+        AppHaptics.selection()
         isComposerFocused = false
         isOverflowOpen.toggle()
     }
@@ -38,6 +43,7 @@ extension ChatViewModel {
     }
 
     func selectOverflowItem(_ item: OverflowMenuItem) {
+        AppHaptics.selection()
         isOverflowOpen = false
         isComposerFocused = false
         presentedOverflowItem = item
@@ -48,6 +54,7 @@ extension ChatViewModel {
     }
 
     func openPromptLibrary() {
+        AppHaptics.selection()
         isComposerFocused = false
         isDrawerOpen = false
         isPromptLibraryPresented = true
@@ -63,6 +70,7 @@ extension ChatViewModel {
         prompt = template.text
         isPromptLibraryPresented = false
         isComposerFocused = true
+        AppHaptics.selection()
     }
 
     func savePromptTemplate(title: String, text: String) {
@@ -90,6 +98,7 @@ extension ChatViewModel {
         let transcript = transcriptText()
         guard !transcript.isEmpty else { return }
 
+        AppHaptics.selection()
         isComposerFocused = false
         sharePayload = SharePayload(text: transcript)
     }

@@ -122,6 +122,7 @@ struct ChatView: View {
         VStack(spacing: 0) {
             ChatHeaderView(
                 title: viewModel.chatTitle,
+                providerStatus: viewModel.providerStatus,
                 openMenu: usesPersistentSidebar ? viewModel.togglePersistentSidebar : viewModel.openDrawer,
                 startNewChat: viewModel.startNewChat,
                 shareChat: viewModel.shareCurrentChat,
@@ -172,7 +173,7 @@ struct ChatView: View {
                 generationMetrics: viewModel.generationMetrics,
                 canRegenerate: viewModel.canRegenerate,
                 send: viewModel.sendCurrentPrompt,
-                stop: viewModel.stopGeneration,
+                stop: { viewModel.stopGeneration() },
                 regenerate: viewModel.regenerateLastResponse
             )
         }

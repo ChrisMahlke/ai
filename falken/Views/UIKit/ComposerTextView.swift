@@ -97,6 +97,8 @@ struct ComposerTextView: UIViewRepresentable {
             replacementText replacement: String
         ) -> Bool {
             guard replacement == "\n" else { return true }
+            parent.isFocused = false
+            textView.resignFirstResponder()
             parent.onSubmit()
             return false
         }

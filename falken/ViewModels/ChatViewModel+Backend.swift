@@ -27,7 +27,8 @@ extension ChatViewModel {
     func selectModelProfile(_ profile: LocalModelProfile) {
         guard let localAIManager else { return }
 
-        stopGeneration()
+        AppHaptics.selection()
+        stopGeneration(triggerHaptic: false)
         localAIManager.selectModelProfile(profile)
         activeModelProfile = localAIManager.activeModelProfile
         installedModels = localAIManager.installedModels()
@@ -55,7 +56,8 @@ extension ChatViewModel {
     func selectProvider(_ provider: ChatProvider) {
         guard provider != selectedProvider else { return }
 
-        stopGeneration()
+        AppHaptics.selection()
+        stopGeneration(triggerHaptic: false)
         selectedProvider = provider
         providerStore.save(provider)
         backendNotice = nil

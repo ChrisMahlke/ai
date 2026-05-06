@@ -11,15 +11,14 @@ struct EmptyChatView: View {
     let useSuggestion: (String) -> Void
 
     private let suggestions = [
-        "Summarize this in three bullets.",
-        "Draft a concise reply.",
-        "Help me think through a decision."
+        "Summarize this.",
+        "Draft a concise reply."
     ]
 
     var body: some View {
-        VStack(spacing: 18) {
+        VStack(spacing: 14) {
             Text(AppBrand.spacedName)
-                .font(.system(size: 34, weight: .regular, design: .rounded))
+                .font(.system(size: 31, weight: .regular, design: .rounded))
                 .foregroundStyle(AppTheme.foreground.opacity(0.82))
                 .textCase(.lowercase)
 
@@ -29,10 +28,6 @@ struct EmptyChatView: View {
                 .lineSpacing(3)
                 .foregroundStyle(AppTheme.foreground.opacity(0.44))
                 .frame(maxWidth: 320)
-
-            Text("Ask anything.")
-                .font(.system(size: 15, weight: .regular))
-                .foregroundStyle(AppTheme.foreground.opacity(0.56))
 
             VStack(spacing: 8) {
                 ForEach(suggestions, id: \.self) { suggestion in
@@ -45,7 +40,7 @@ struct EmptyChatView: View {
                             .lineLimit(1)
                             .minimumScaleFactor(0.82)
                             .frame(maxWidth: .infinity)
-                            .frame(height: 40)
+                            .frame(height: 38)
                             .background(
                                 RoundedRectangle(cornerRadius: 8, style: .continuous)
                                     .fill(AppTheme.foreground.opacity(0.055))
@@ -55,10 +50,10 @@ struct EmptyChatView: View {
                     .buttonStyle(.plain)
                 }
             }
-            .frame(maxWidth: 320)
-            .padding(.top, 8)
+            .frame(maxWidth: 284)
+            .padding(.top, 4)
         }
         .frame(maxWidth: .infinity)
-        .padding(.top, 120)
+        .padding(.top, 86)
     }
 }

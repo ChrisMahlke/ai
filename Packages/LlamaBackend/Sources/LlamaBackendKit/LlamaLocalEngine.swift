@@ -8,7 +8,7 @@ public final class LlamaLocalEngine: @unchecked Sendable {
     private static let backendLock = NSLock()
     private static var backendInitialized = false
 
-    private let queue = DispatchQueue(label: "io.chrismahlke.ai.llama-backend")
+    private let queue = DispatchQueue(label: "io.chrismahlke.falken.llama-backend")
     private let generationLock = NSLock()
     private var model: OpaquePointer?
     private var context: OpaquePointer?

@@ -1,0 +1,633 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		F9A7C4A32FAA5600009A4F02 /* LlamaBackendKit in Frameworks */ = {isa = PBXBuildFile; productRef = F9A7C4A42FAA5600009A4F02 /* LlamaBackendKit */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F9A7C4872FAA4713009A4F02 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F9A7C46F2FAA4712009A4F02 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F9A7C4762FAA4712009A4F02;
+			remoteInfo = falken;
+		};
+		F9A7C4912FAA4713009A4F02 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F9A7C46F2FAA4712009A4F02 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F9A7C4762FAA4712009A4F02;
+			remoteInfo = falken;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		F9A7C4772FAA4712009A4F02 /* falken.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = falken.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F9A7C4862FAA4713009A4F02 /* falkenTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = falkenTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F9A7C4902FAA4713009A4F02 /* falkenUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = falkenUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		F9A7C4792FAA4712009A4F02 /* falken */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = falken;
+			sourceTree = "<group>";
+		};
+		F9A7C4892FAA4713009A4F02 /* falkenTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = falkenTests;
+			sourceTree = "<group>";
+		};
+		F9A7C4932FAA4713009A4F02 /* falkenUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = falkenUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F9A7C4742FAA4712009A4F02 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F9A7C4A32FAA5600009A4F02 /* LlamaBackendKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F9A7C4832FAA4713009A4F02 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F9A7C48D2FAA4713009A4F02 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		F9A7C46E2FAA4712009A4F02 = {
+			isa = PBXGroup;
+			children = (
+				F9A7C4792FAA4712009A4F02 /* falken */,
+				F9A7C4892FAA4713009A4F02 /* falkenTests */,
+				F9A7C4932FAA4713009A4F02 /* falkenUITests */,
+				F9A7C4782FAA4712009A4F02 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F9A7C4782FAA4712009A4F02 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F9A7C4772FAA4712009A4F02 /* falken.app */,
+				F9A7C4862FAA4713009A4F02 /* falkenTests.xctest */,
+				F9A7C4902FAA4713009A4F02 /* falkenUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F9A7C4762FAA4712009A4F02 /* falken */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F9A7C49A2FAA4713009A4F02 /* Build configuration list for PBXNativeTarget "falken" */;
+			buildPhases = (
+				F9A7C4A72FAA6200009A4F02 /* Validate Local Model Resources */,
+				F9A7C4732FAA4712009A4F02 /* Sources */,
+				F9A7C4742FAA4712009A4F02 /* Frameworks */,
+				F9A7C4752FAA4712009A4F02 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				F9A7C4792FAA4712009A4F02 /* falken */,
+			);
+			name = falken;
+			packageProductDependencies = (
+				F9A7C4A42FAA5600009A4F02 /* LlamaBackendKit */,
+			);
+			productName = falken;
+			productReference = F9A7C4772FAA4712009A4F02 /* falken.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F9A7C4852FAA4713009A4F02 /* falkenTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F9A7C49D2FAA4713009A4F02 /* Build configuration list for PBXNativeTarget "falkenTests" */;
+			buildPhases = (
+				F9A7C4822FAA4713009A4F02 /* Sources */,
+				F9A7C4832FAA4713009A4F02 /* Frameworks */,
+				F9A7C4842FAA4713009A4F02 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F9A7C4882FAA4713009A4F02 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				F9A7C4892FAA4713009A4F02 /* falkenTests */,
+			);
+			name = falkenTests;
+			packageProductDependencies = (
+			);
+			productName = falkenTests;
+			productReference = F9A7C4862FAA4713009A4F02 /* falkenTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		F9A7C48F2FAA4713009A4F02 /* falkenUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F9A7C4A02FAA4713009A4F02 /* Build configuration list for PBXNativeTarget "falkenUITests" */;
+			buildPhases = (
+				F9A7C48C2FAA4713009A4F02 /* Sources */,
+				F9A7C48D2FAA4713009A4F02 /* Frameworks */,
+				F9A7C48E2FAA4713009A4F02 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F9A7C4922FAA4713009A4F02 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				F9A7C4932FAA4713009A4F02 /* falkenUITests */,
+			);
+			name = falkenUITests;
+			packageProductDependencies = (
+			);
+			productName = falkenUITests;
+			productReference = F9A7C4902FAA4713009A4F02 /* falkenUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F9A7C46F2FAA4712009A4F02 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2620;
+				LastUpgradeCheck = 2620;
+				TargetAttributes = {
+					F9A7C4762FAA4712009A4F02 = {
+						CreatedOnToolsVersion = 26.2;
+					};
+					F9A7C4852FAA4713009A4F02 = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = F9A7C4762FAA4712009A4F02;
+					};
+					F9A7C48F2FAA4713009A4F02 = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = F9A7C4762FAA4712009A4F02;
+					};
+				};
+			};
+			buildConfigurationList = F9A7C4722FAA4712009A4F02 /* Build configuration list for PBXProject "falken" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = F9A7C46E2FAA4712009A4F02;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				F9A7C4A52FAA5600009A4F02 /* XCLocalSwiftPackageReference "Packages/LlamaBackend" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = F9A7C4782FAA4712009A4F02 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F9A7C4762FAA4712009A4F02 /* falken */,
+				F9A7C4852FAA4713009A4F02 /* falkenTests */,
+				F9A7C48F2FAA4713009A4F02 /* falkenUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F9A7C4752FAA4712009A4F02 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F9A7C4842FAA4713009A4F02 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F9A7C48E2FAA4713009A4F02 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		F9A7C4A72FAA6200009A4F02 /* Validate Local Model Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/falken/Models",
+			);
+			name = "Validate Local Model Resources";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -eu\n\nMODEL_DIR=\"${SRCROOT}/falken/Models\"\nEXPECTED_MODEL=\"${MODEL_DIR}/google_gemma-3-1b-it-Q4_K_M.gguf\"\n\nif [ ! -f \"${EXPECTED_MODEL}\" ]; then\n  echo \"error: Missing expected GGUF model: ${EXPECTED_MODEL}\" >&2\n  exit 1\nfi\n\nGGUF_COUNT=$(find \"${MODEL_DIR}\" -maxdepth 1 -type f -name '*.gguf' | wc -l | tr -d ' ')\nif [ \"${GGUF_COUNT}\" != \"1\" ]; then\n  echo \"error: Expected exactly one GGUF model in ${MODEL_DIR}; found ${GGUF_COUNT}.\" >&2\n  exit 1\nfi\n\nif [ -d \"${MODEL_DIR}/.cache\" ]; then\n  CACHE_FILES=$(find \"${MODEL_DIR}/.cache\" -type f | wc -l | tr -d ' ')\n  if [ \"${CACHE_FILES}\" != \"0\" ]; then\n    echo \"error: Remove Hugging Face cache files from ${MODEL_DIR}/.cache before building.\" >&2\n    exit 1\n  fi\nfi\n\nEXTRA_METADATA=$(find \"${MODEL_DIR}\" -type f \\( -name '*.lock' -o -name '*.metadata' \\) | wc -l | tr -d ' ')\nif [ \"${EXTRA_METADATA}\" != \"0\" ]; then\n  echo \"error: Model cache metadata files should not be bundled.\" >&2\n  exit 1\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F9A7C4732FAA4712009A4F02 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F9A7C4822FAA4713009A4F02 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F9A7C48C2FAA4713009A4F02 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F9A7C4882FAA4713009A4F02 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F9A7C4762FAA4712009A4F02 /* falken */;
+			targetProxy = F9A7C4872FAA4713009A4F02 /* PBXContainerItemProxy */;
+		};
+		F9A7C4922FAA4713009A4F02 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F9A7C4762FAA4712009A4F02 /* falken */;
+			targetProxy = F9A7C4912FAA4713009A4F02 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		F9A7C4982FAA4713009A4F02 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = WU9WPXVS4R;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		F9A7C4992FAA4713009A4F02 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = WU9WPXVS4R;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		F9A7C49B2FAA4713009A4F02 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = WU9WPXVS4R;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = falken;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.chrismahlke.falken;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F9A7C49C2FAA4713009A4F02 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = WU9WPXVS4R;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = falken;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.chrismahlke.falken;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		F9A7C49E2FAA4713009A4F02 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = WU9WPXVS4R;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.chrismahlke.falkenTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/falken.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/falken";
+			};
+			name = Debug;
+		};
+		F9A7C49F2FAA4713009A4F02 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = WU9WPXVS4R;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.chrismahlke.falkenTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/falken.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/falken";
+			};
+			name = Release;
+		};
+		F9A7C4A12FAA4713009A4F02 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = WU9WPXVS4R;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.chrismahlke.falkenUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = falken;
+			};
+			name = Debug;
+		};
+		F9A7C4A22FAA4713009A4F02 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = WU9WPXVS4R;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.chrismahlke.falkenUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = falken;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F9A7C4722FAA4712009A4F02 /* Build configuration list for PBXProject "falken" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F9A7C4982FAA4713009A4F02 /* Debug */,
+				F9A7C4992FAA4713009A4F02 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F9A7C49A2FAA4713009A4F02 /* Build configuration list for PBXNativeTarget "falken" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F9A7C49B2FAA4713009A4F02 /* Debug */,
+				F9A7C49C2FAA4713009A4F02 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F9A7C49D2FAA4713009A4F02 /* Build configuration list for PBXNativeTarget "falkenTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F9A7C49E2FAA4713009A4F02 /* Debug */,
+				F9A7C49F2FAA4713009A4F02 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F9A7C4A02FAA4713009A4F02 /* Build configuration list for PBXNativeTarget "falkenUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F9A7C4A12FAA4713009A4F02 /* Debug */,
+				F9A7C4A22FAA4713009A4F02 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		F9A7C4A52FAA5600009A4F02 /* XCLocalSwiftPackageReference "Packages/LlamaBackend" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/LlamaBackend;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F9A7C4A42FAA5600009A4F02 /* LlamaBackendKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F9A7C4A52FAA5600009A4F02 /* XCLocalSwiftPackageReference "Packages/LlamaBackend" */;
+			productName = LlamaBackendKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = F9A7C46F2FAA4712009A4F02 /* Project object */;
+}

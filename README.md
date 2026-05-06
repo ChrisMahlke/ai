@@ -1,6 +1,6 @@
-# ai
+# falken
 
-`ai` is a minimal, offline-first iOS chat application for iPhone and iPad. The app provides a focused ChatGPT-style interface backed by a local quantized model through a Swift Package wrapper around `llama.cpp`.
+`falken` is a minimal, offline-first iOS chat application for iPhone and iPad. The app provides a focused ChatGPT-style interface backed by a local quantized model through a Swift Package wrapper around `llama.cpp`.
 
 The default path is local inference. Network-backed model providers can be added behind the existing responder abstraction without replacing the on-device architecture.
 
@@ -8,10 +8,10 @@ The default path is local inference. Network-backed model providers can be added
 
 The codebase is organized around a small SwiftUI/MVVM structure:
 
-- `ai/Views`: SwiftUI screens and reusable UI components.
-- `ai/ViewModels`: presentation state and chat orchestration.
-- `ai/Models`: value types for chat state, runtime state, local model settings, diagnostics, presets, and history policy.
-- `ai/Services`: local model lifecycle, chat responders, memory policy, settings persistence, and chat history persistence.
+- `falken/Views`: SwiftUI screens and reusable UI components.
+- `falken/ViewModels`: presentation state and chat orchestration.
+- `falken/Models`: value types for chat state, runtime state, local model settings, diagnostics, presets, and history policy.
+- `falken/Services`: local model lifecycle, chat responders, memory policy, settings persistence, and chat history persistence.
 - `Packages/LlamaBackend`: local Swift Package exposing `LlamaBackendKit`, a thin Swift API over the `llama.cpp` XCFramework binary target.
 
 Important runtime components:
@@ -34,7 +34,7 @@ Important runtime components:
 The expected model resource is:
 
 ```text
-ai/Models/google_gemma-3-1b-it-Q4_K_M.gguf
+falken/Models/google_gemma-3-1b-it-Q4_K_M.gguf
 ```
 
 Model weights are intentionally ignored by Git because they are large binary artifacts. Keep the filename above unless `LocalModelResource.swift` is updated to match a different model.
@@ -42,7 +42,7 @@ Model weights are intentionally ignored by Git because they are large binary art
 The Models screen also recognizes an optional higher-quality profile:
 
 ```text
-ai/Models/google_gemma-3-4b-it-Q4_K_M.gguf
+falken/Models/google_gemma-3-4b-it-Q4_K_M.gguf
 ```
 
 Only installed profiles can be selected. Larger profiles should be tested on target hardware before shipping because app size, RAM pressure, and thermal behavior change materially.
@@ -66,16 +66,16 @@ The app also includes:
 
 ## Build
 
-Open `ai.xcodeproj`, select the `ai` scheme, and build for a physical iOS device.
+Open `falken.xcodeproj`, select the `falken` scheme, and build for a physical iOS device.
 
 Command-line build used during development:
 
 ```sh
 xcodebuild -quiet \
-  -project ai.xcodeproj \
-  -scheme ai \
+  -project falken.xcodeproj \
+  -scheme falken \
   -destination generic/platform=iOS \
-  -derivedDataPath /tmp/ai-derived \
+  -derivedDataPath /tmp/falken-derived \
   CODE_SIGNING_ALLOWED=NO \
   build
 ```
@@ -84,7 +84,7 @@ xcodebuild -quiet \
 
 The current implementation was build-tested with:
 
-- Xcode command-line build using the `ai` scheme.
+- Xcode command-line build using the `falken` scheme.
 - Generic iOS device destination.
 - iPhoneOS SDK 26.2.
 - Local `LlamaBackend` Swift Package resolution.

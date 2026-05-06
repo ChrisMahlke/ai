@@ -39,6 +39,9 @@ struct ChatGenerationCoordinator {
                 var tokenBuffer = ""
                 var lastFlush = Date()
 
+                // Native backends can emit tiny token fragments quickly. Buffer
+                // briefly so SwiftUI updates look smooth without losing partial
+                // text when cancellation or failure happens mid-response.
                 func flushBufferedTokens() {
                     guard !tokenBuffer.isEmpty else { return }
 

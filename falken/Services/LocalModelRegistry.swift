@@ -13,6 +13,9 @@ nonisolated struct LocalModelRegistry {
     let descriptors: [LocalModelDescriptor]
 
     init(descriptors: [LocalModelDescriptor]? = nil) {
+        // Keep model filenames, size bounds, and user-facing installation copy
+        // centralized here. Adding a model should not require hardcoded checks
+        // throughout the UI.
         self.descriptors = descriptors ?? [
             LocalModelDescriptor(
                 profile: .smallFast,

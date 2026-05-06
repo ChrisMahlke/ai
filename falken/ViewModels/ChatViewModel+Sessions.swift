@@ -155,6 +155,9 @@ extension ChatViewModel {
     func restoreHistory() {
         guard let prunedSnapshot = historyPersistence.load() else { return }
 
+        // Cold launch starts on the welcome screen. Preserve the previously
+        // active conversation by moving it into Recent Chats before clearing
+        // the visible chat state.
         recentChats = prunedSnapshot.recentChats
         restorePreviousCurrentChatAsRecent(from: prunedSnapshot)
         sortRecentChats()
@@ -171,6 +174,9 @@ extension ChatViewModel {
         saveHistoryImmediately()
     }
 
+    // Persisted snapshots keep the last visible chat separately from archived
+    // recent chats. On restore, normalize that shape back into a single recent
+    // chat list so the app can launch into a fresh conversation.
     private func restorePreviousCurrentChatAsRecent(from snapshot: ChatHistorySnapshot) {
         guard snapshot.currentMessages.contains(where: { $0.role == .user }) else { return }
 

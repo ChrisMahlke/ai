@@ -1,102 +1,173 @@
 # falken
 
-`falken` is a minimal, offline-first iOS chat application for iPhone and iPad. The app provides a focused ChatGPT-style interface backed by a local quantized model through a Swift Package wrapper around `llama.cpp`.
+`falken` is an offline-first iOS chat app for iPhone and iPad. It provides a focused ChatGPT-style interface backed by local GGUF models through a Swift Package wrapper around `llama.cpp`.
 
-The default path is local inference. Network-backed model providers can be added behind the existing responder abstraction without replacing the on-device architecture.
+The default path is local inference. Optional remote providers can be added behind the responder abstraction without replacing the on-device chat architecture.
 
-## Architecture
+## Quick Start
 
-The codebase is organized around a small SwiftUI/MVVM structure:
+1. Install Xcode with iOS SDK support.
+2. Add the required local model file:
 
-- `falken/Views`: SwiftUI screens and reusable UI components.
-- `falken/ViewModels`: presentation state and chat orchestration.
-- `falken/Models`: value types for chat state, runtime state, local model settings, diagnostics, presets, and history policy.
-- `falken/Services`: local model lifecycle, chat responders, memory policy, settings persistence, and chat history persistence.
-- `Packages/LlamaBackend`: local Swift Package exposing `LlamaBackendKit`, a thin Swift API over the `llama.cpp` XCFramework binary target.
+   ```text
+   falken/Models/google_gemma-3-1b-it-Q4_K_M.gguf
+   ```
 
-Important runtime components:
+3. Open `falken.xcodeproj`.
+4. Select the shared `falken` scheme.
+5. Select a connected iPhone or iPad.
+6. Set signing to your Apple development team.
+7. Build and run.
 
-- `LocalAIManager`: owns local model load/unload, generation, diagnostics, settings, memory handling, and cancellation.
-- `LlamaLocalEngine`: wraps the native backend, applies the model chat template, streams tokens, and truncates prompt history by token budget.
-- `ChatViewModel`: owns UI state, chat persistence, runtime state, recent chats, sharing, archiving, renaming, and bounded history pruning.
-- `ChatHistoryPolicy`: keeps restored and persisted chat history bounded for memory and storage safety.
-- `LocalModelMemoryPolicy`: blocks model loading when memory, model size, or thermal state make local inference unsafe.
-- `LocalModelProfile`: describes selectable local model profiles, from the bundled small/fast model to optional higher-quality GGUF profiles.
-- `LocalModelResourceValidator`: validates bundled model resources and powers the Models screen installation status.
+The app is designed to run on physical devices. Simulator builds are useful for compile checks and UI iteration, but local model performance and memory behavior must be validated on the target device.
 
 ## Requirements
 
 - Xcode with iOS SDK support.
 - iOS 17 or newer for the local backend package.
-- A physical iPhone or iPad that you can build and deploy to from Xcode.
-- An Apple developer account or local signing setup that allows installing development builds on your own device.
-- The quantized GGUF model file must be installed locally before building/running with offline inference.
+- A physical iPhone or iPad for local inference testing.
+- Apple development signing configured for installing the app on your device.
+- A quantized GGUF model installed locally before using offline inference.
 
-`falken` is intended to be built locally and installed directly on your own iPhone or iPad. Add the model file to the project before building, select your personal development team in Xcode signing settings, connect the target device, and deploy the `falken` scheme to that device.
+## Model Files
 
-The expected model resource is:
+Model weights are intentionally ignored by Git because they are large binary artifacts. Keep downloads, conversion caches, and temporary model files out of the repository.
+
+Required small/fast profile:
 
 ```text
 falken/Models/google_gemma-3-1b-it-Q4_K_M.gguf
 ```
 
-Model weights are intentionally ignored by Git because they are large binary artifacts. Keep the filename above unless `LocalModelResource.swift` is updated to match a different model.
-
-The Models screen also recognizes an optional higher-quality profile:
+Optional higher-quality profile:
 
 ```text
 falken/Models/google_gemma-3-4b-it-Q4_K_M.gguf
 ```
 
-Only installed profiles can be selected. Larger profiles should be tested on target hardware before shipping because app size, RAM pressure, and thermal behavior change materially.
+The build phase `Validate Local Model Resources` checks that model resources are sane before bundling. It expects exactly one bundled GGUF model for the current default app target and rejects cache metadata such as `.lock` and `.metadata` files.
 
-## Local Model Notes
+If you add a new model family or rename a model file, update:
 
-This project is tuned around constrained-memory devices. The Settings screen exposes three model profiles:
+- `falken/Services/LocalModelRegistry.swift`
+- `falken/Models/LocalModelProfile.swift`
+- the model validation script in `falken.xcodeproj`
+- any user-facing installation copy in the Models screen
 
-- `Efficient`: lower context/output/thread pressure for older or warm devices.
-- `Balanced`: recommended default profile.
-- `Expanded`: larger context/output settings when memory allows.
+## App Behavior
 
-Manual settings become `Custom` and are saved on device. Changing settings unloads the current model; the next generation reloads the model with the new options.
+### Cold Launch
 
-The app also includes:
+When the app is relaunched after being quit, it shows the welcome screen instead of reopening the previous active chat. Any persisted active conversation is migrated into Recent Chats during history restore, then the visible chat starts empty.
 
-- a first-run onboarding screen explaining the local model requirement,
-- a Models screen for installed GGUF profile status and active profile selection,
-- anonymized diagnostics copying for troubleshooting,
-- an appearance preference for System, Dark, and restrained Light presentation.
+This keeps launch lightweight and avoids surprising users by reopening an old conversation. Users can resume prior conversations from the sidebar or drawer.
 
-## Build
+### Recent Chats
 
-Open `falken.xcodeproj`, select the `falken` scheme, choose your connected iPhone or iPad as the run destination, confirm signing is configured for your team, and build/run the app on that device.
+Chats are archived into Recent Chats when the user starts a new chat, loads another chat, renames a chat, or when a persisted active conversation is restored after relaunch. Recent chats are pruned by `ChatHistoryPolicy` so storage and memory remain bounded.
 
-The app expects the local model to be present at build time. If the model is missing, the app can still launch, but local inference will report that the model is unavailable until the correct GGUF file is added to `falken/Models`, included in the `falken` target membership, and rebuilt.
+Pinned chats are preserved ahead of unpinned chats and are not removed by stale-chat cleanup.
 
-Command-line build used during development:
+### Local Model Loading
+
+The model loads only when local inference is needed. Changing model settings unloads the current model; the next generation reloads it with the new settings.
+
+The app unloads the model for memory warnings, background transitions, termination, thermal pressure, and repeated generation timeouts.
+
+### Settings and Diagnostics
+
+The Settings screen exposes:
+
+- provider selection
+- appearance selection
+- model presets
+- advanced local model controls
+- settings impact preview
+- local telemetry and diagnostics
+- chat history clearing
+
+Diagnostics are local-only and designed for troubleshooting. They should not include chat message text or user identifiers.
+
+## Architecture
+
+The codebase uses SwiftUI with an MVVM-oriented app shell and smaller services for model lifecycle, generation, persistence, and validation.
+
+- `falken/Views`: SwiftUI screens and reusable UI components.
+- `falken/ViewModels`: presentation state, chat state, and user actions.
+- `falken/Models`: value types for chat state, runtime state, settings, diagnostics, presets, profiles, and history policy.
+- `falken/Services`: local model lifecycle, responders, persistence, telemetry, memory policy, cleanup, and validation.
+- `Packages/LlamaBackend`: local Swift Package exposing `LlamaBackendKit`, a Swift API over the `llama.cpp` XCFramework binary target.
+
+Important runtime components:
+
+- `LocalAIManager`: owns local model load/unload, settings, diagnostics, telemetry, generation, memory handling, and cancellation.
+- `LlamaLocalEngine`: wraps the native backend, applies the model chat template, streams tokens, and truncates prompt history by token budget.
+- `ChatViewModel`: owns app-facing chat state, recent chats, sharing, archiving, renaming, search, and presentation.
+- `ChatGenerationCoordinator`: smooths streamed tokens into UI-friendly generation events.
+- `ChatPersistenceService`: schedules and bounds local chat history saves.
+- `ChatHistoryPolicy`: prunes visible, archived, and persisted chat history.
+- `PromptContextOptimizer`: trims older context and adds a compact summary before sending history to the model.
+- `LocalModelRegistry`: defines supported local model profiles and their expected resources.
+- `LocalModelResourceValidator`: validates bundled model resources and powers the Models screen installation status.
+- `LocalModelMemoryPolicy`: blocks or unloads local inference when memory, model size, or thermal state make it unsafe.
+- `BackgroundCleanupService`: removes stale unpinned chats and old telemetry.
+
+For contributor workflow, warning gates, and implementation rules, see `docs/DEVELOPMENT.md`.
+
+## Build and Verify
+
+Generic iOS build:
 
 ```sh
 xcodebuild -quiet \
   -project falken.xcodeproj \
   -scheme falken \
   -destination generic/platform=iOS \
-  -derivedDataPath /tmp/falken-derived \
-  CODE_SIGNING_ALLOWED=NO \
   build
 ```
 
-## Tested
+Simulator compile check:
 
-The current implementation was build-tested with:
+```sh
+xcodebuild -quiet \
+  -project falken.xcodeproj \
+  -scheme falken \
+  -destination platform=iOS\ Simulator,name=iPhone\ 17 \
+  build
+```
 
-- Xcode command-line build using the `falken` scheme.
-- Generic iOS device destination.
-- iPhoneOS SDK 26.2.
-- Local `LlamaBackend` Swift Package resolution.
-- Bundled resource validation confirming only `google_gemma-3-1b-it-Q4_K_M.gguf` is present among model/cache-sensitive files.
+The project should build cleanly with `-quiet`; unexpected output usually means a warning or build-system issue was introduced.
 
-Runtime behavior should still be validated on the physical device where the app will be used, especially after changing model settings, because local inference performance and memory pressure depend on device RAM, thermal state, and the exact model file.
+## Troubleshooting
+
+### The model is unavailable in the app
+
+Check that the GGUF file:
+
+- exists in `falken/Models`
+- has the exact expected filename
+- is included in the `falken` target membership
+- is copied into the app bundle during build
+- is within the expected size range in `LocalModelRegistry`
+
+### Build fails in model validation
+
+Remove extra model artifacts from `falken/Models`. The app should not bundle Hugging Face cache folders, lock files, metadata files, or multiple GGUF files unless the validation script and registry have been intentionally updated.
+
+### The app reloads a model after settings change
+
+This is expected. Saved settings are applied on the next model load. The app unloads the current model when settings or model profile changes.
+
+### A previous chat appears in Recent Chats after relaunch
+
+This is expected. On cold launch, the previously active conversation is archived into Recent Chats and the welcome screen is shown.
+
+### Local inference is slow or stops
+
+Use Efficient settings, reduce context/output limits, close other apps, and test on a cool device. Older devices and larger models are more likely to hit memory or thermal guardrails.
 
 ## Repository Hygiene
 
 The repository excludes generated build output, user-specific Xcode state, editor state, secrets, and large local model artifacts. Keep model downloads and conversion caches outside Git.
+
+Before pushing, run both build commands above. For changes that affect persistence, model loading, or generation, also validate on a physical device.

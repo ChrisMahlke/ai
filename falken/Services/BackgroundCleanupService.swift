@@ -29,6 +29,8 @@ struct BackgroundCleanupService {
     }
 
     func run() {
+        // Cleanup is intentionally best-effort and local-only. It should never
+        // block launch, require network access, or delete pinned conversations.
         cleanupHistory()
         cleanupTelemetry()
     }

@@ -23,6 +23,18 @@ extension LocalAIManager {
         }
     }
 
+    func recordSuccessfulLoad(duration: TimeInterval) {
+        runtimeTelemetry.recordLoad(duration: duration)
+        telemetryStore.save(runtimeTelemetry)
+        refreshDiagnosticsAfterTelemetryChange()
+    }
+
+    func recordInference(metrics: GenerationMetrics, didFail: Bool) {
+        runtimeTelemetry.recordGeneration(metrics: metrics, didFail: didFail)
+        telemetryStore.save(runtimeTelemetry)
+        refreshDiagnosticsAfterTelemetryChange()
+    }
+
     func diagnosticsForUnavailableModel(_ message: String) -> LocalModelDiagnostics {
         LocalModelDiagnostics(
             modelName: activeModelProfile.title,

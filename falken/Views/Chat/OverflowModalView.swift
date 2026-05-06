@@ -111,6 +111,8 @@ struct OverflowModalView: View {
                         case .diagnostics:
                             DiagnosticsExportContent(
                                 report: diagnosticsReport,
+                                diagnostics: modelDiagnostics,
+                                providerStatus: providerStatus,
                                 copyDiagnostics: copyDiagnostics
                             )
                         case .settings:

@@ -74,13 +74,15 @@ extension LocalAIManager {
                 }
             }
 
+            let loadDuration = Date().timeIntervalSince(startedAt)
             loadState = .loaded
             runtimeTelemetry.appMemoryAfterLoadBytes = LocalModelMemoryPolicy.currentAppMemoryFootprint()
             runtimeTelemetry.lastLoadedAt = Date()
+            recordSuccessfulLoad(duration: loadDuration)
             diagnostics = diagnosticsForCurrentModel(
                 modelURL: modelURL,
                 status: .ready,
-                loadDuration: Date().timeIntervalSince(startedAt)
+                loadDuration: loadDuration
             )
             progress(1.0, "Local model ready")
         } catch {

@@ -124,6 +124,7 @@ struct ChatView: View {
                 title: viewModel.chatTitle,
                 providerStatus: viewModel.providerStatus,
                 openMenu: usesPersistentSidebar ? viewModel.togglePersistentSidebar : viewModel.openDrawer,
+                openModelDiagnostics: viewModel.openModelDiagnostics,
                 startNewChat: viewModel.startNewChat,
                 shareChat: viewModel.shareCurrentChat,
                 toggleOverflow: viewModel.toggleOverflowMenu

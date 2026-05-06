@@ -40,6 +40,9 @@ struct ChatDiagnosticsReporter {
             .joined(separator: "\n")
         let appMemory = diagnostics.appMemoryBytes.map { ByteCountFormatter.string(fromByteCount: Int64($0), countStyle: .memory) } ?? "unknown"
         let loadTime = diagnostics.loadDuration.map { String(format: "%.1fs", $0) } ?? "n/a"
+        let averageLoad = diagnostics.telemetry.averageLoadDuration.map { String(format: "%.1fs", $0) } ?? "n/a"
+        let averageFirstToken = diagnostics.telemetry.averageFirstTokenLatency.map { String(format: "%.2fs", $0) } ?? "n/a"
+        let averageTokensPerSecond = diagnostics.telemetry.averageTokensPerSecond.map { String(format: "%.1f", $0) } ?? "n/a"
 
         return """
         \(AppBrand.name) diagnostics
@@ -53,6 +56,10 @@ struct ChatDiagnosticsReporter {
         App memory: \(appMemory)
         Thermal state: \(diagnostics.thermalState.anonymizedDescription)
         Load time: \(loadTime)
+        Average load time: \(averageLoad)
+        Average first token latency: \(averageFirstToken)
+        Average tokens/sec: \(averageTokensPerSecond)
+        Local inference failures: \(diagnostics.telemetry.failureCount) of \(diagnostics.telemetry.generationCount)
         Appearance: \(appearanceMode.title)
         Recent chats: \(recentChatCount)
         Current messages: \(currentMessageCount)

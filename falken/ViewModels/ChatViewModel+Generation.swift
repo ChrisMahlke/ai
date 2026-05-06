@@ -115,19 +115,36 @@ extension ChatViewModel {
             let stream = await responder.responseStream(for: prompt, history: history)
             let assistantID = UUID()
             var didStartResponse = false
+            var tokenBuffer = ""
+            var lastFlush = Date()
+
+            func flushBufferedTokens() async {
+                guard !tokenBuffer.isEmpty else { return }
+
+                await self.appendAssistantToken(tokenBuffer, messageID: assistantID, chatID: chatID)
+                tokenBuffer = ""
+                lastFlush = Date()
+            }
 
             for await token in stream {
-                guard !Task.isCancelled else { return }
+                guard !Task.isCancelled else {
+                    await flushBufferedTokens()
+                    return
+                }
 
                 if !didStartResponse {
                     self.beginAssistantResponse(id: assistantID, chatID: chatID)
                     didStartResponse = true
                 }
 
-                self.appendAssistantToken(token, messageID: assistantID, chatID: chatID)
+                tokenBuffer += token
+                if tokenBuffer.count >= 32 || Date().timeIntervalSince(lastFlush) >= 0.045 || token.contains("\n") {
+                    await flushBufferedTokens()
+                }
             }
 
             if didStartResponse {
+                await flushBufferedTokens()
                 self.finishAssistantResponse(chatID: chatID)
             } else {
                 self.finishCancelledOrEmptyResponse(chatID: chatID)
@@ -171,7 +188,7 @@ extension ChatViewModel {
         generationStartedAt = Date()
         generationMetrics = generationMetrics.starting(prompt: lastUserPrompt(for: chatID))
         setRuntimeState(.generating)
-        messages.append(ChatMessage(id: id, role: .assistant, text: ""))
+        messages.append(ChatMessage(id: id, role: .assistant, text: "", state: .streaming))
         trimVisibleMessagesIfNeeded()
         scheduleHistorySave()
     }
@@ -181,7 +198,7 @@ extension ChatViewModel {
         guard let messageIndex = messages.firstIndex(where: { $0.id == messageID }) else { return }
 
         messages[messageIndex].text += token
-        messages[messageIndex].state = .complete
+        messages[messageIndex].state = .streaming
         updateGenerationMetrics(token)
         scheduleHistorySave()
     }
@@ -192,6 +209,10 @@ extension ChatViewModel {
         cancelGenerationTimeout()
         resetGenerationTimeoutBackoff()
         setRuntimeState(.idle)
+        if messages.last?.role == .assistant, messages.last?.state == .streaming {
+            messages[messages.count - 1].state = .complete
+        }
+        localAIManager?.recordInference(metrics: generationMetrics, didFail: false)
         generationStartedAt = nil
         trimVisibleMessagesIfNeeded()
         scheduleHistorySave()
@@ -241,12 +262,15 @@ extension ChatViewModel {
         if messages.last?.role == .assistant {
             if messages[messages.count - 1].text.isEmpty {
                 messages[messages.count - 1].text = "Generation timed out."
+            } else {
+                messages[messages.count - 1].text += "\n\nGeneration timed out before the response completed."
             }
             messages[messages.count - 1].state = .failed
         } else {
             messages.append(ChatMessage(role: .assistant, text: "Generation timed out.", state: .failed))
         }
 
+        localAIManager?.recordInference(metrics: generationMetrics, didFail: true)
         trimVisibleMessagesIfNeeded()
         scheduleHistorySave()
     }

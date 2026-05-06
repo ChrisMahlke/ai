@@ -30,6 +30,7 @@ struct LocalModelSettingsContent: View {
             providerPanel
             appearancePanel
             presetPanel
+            validationPreviewPanel
             diagnosticsPanel
             generationPanel
             samplingPanel
@@ -187,6 +188,46 @@ struct LocalModelSettingsContent: View {
         return "\(settings.contextTokenLimit) context · \(settings.outputTokenLimit) output · \(settings.threadCount) threads · \(gpuLayers)"
     }
 
+    private var validationPreviewPanel: some View {
+        let impact = LocalModelSettingsImpact.estimate(
+            currentSettings: currentSettings,
+            draftSettings: draftSettings,
+            diagnostics: diagnostics
+        )
+
+        return ModalPanel {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack {
+                    SectionTitle("Apply preview")
+
+                    Spacer()
+
+                    Text(impact.risk.rawValue)
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(impact.risk == .high ? .red.opacity(0.82) : AppTheme.foreground.opacity(0.56))
+                        .padding(.horizontal, 9)
+                        .frame(height: 24)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .fill(impact.risk == .high ? Color.red.opacity(0.1) : AppTheme.subtleFill)
+                        )
+                }
+
+                VStack(spacing: 10) {
+                    DiagnosticRow(label: "Estimated RAM", value: byteString(impact.estimatedMemoryBytes))
+                    DiagnosticRow(label: "Context cache", value: byteString(impact.estimatedContextMemoryBytes))
+                    DiagnosticRow(label: "Context change", value: signedTokenDelta(impact.contextDelta))
+                    DiagnosticRow(label: "Response change", value: signedTokenDelta(impact.outputDelta))
+                }
+
+                Text(impact.risk.guidance)
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundStyle(AppTheme.foreground.opacity(0.46))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
     private var diagnosticsPanel: some View {
         ModalPanel {
             VStack(alignment: .leading, spacing: 14) {
@@ -261,6 +302,25 @@ struct LocalModelSettingsContent: View {
 
         if let lastUnloadReason = diagnostics.telemetry.lastUnloadReason {
             DiagnosticRow(label: "Last unload", value: lastUnloadReason)
+        }
+
+        if let averageLoadDuration = diagnostics.telemetry.averageLoadDuration {
+            DiagnosticRow(label: "Avg load", value: String(format: "%.1fs", averageLoadDuration))
+        }
+
+        if let averageFirstTokenLatency = diagnostics.telemetry.averageFirstTokenLatency {
+            DiagnosticRow(label: "First token", value: String(format: "%.2fs avg", averageFirstTokenLatency))
+        }
+
+        if let averageTokensPerSecond = diagnostics.telemetry.averageTokensPerSecond {
+            DiagnosticRow(label: "Tokens/sec", value: String(format: "%.1f avg", averageTokensPerSecond))
+        }
+
+        if diagnostics.telemetry.generationCount > 0 {
+            DiagnosticRow(
+                label: "Failure rate",
+                value: "\(Int((diagnostics.telemetry.failureRate * 100).rounded()))%"
+            )
         }
     }
 
@@ -472,6 +532,12 @@ struct LocalModelSettingsContent: View {
         guard bytes > 0 else { return "Unknown" }
 
         return ByteCountFormatter.string(fromByteCount: Int64(bytes), countStyle: .memory)
+    }
+
+    private func signedTokenDelta(_ value: Int) -> String {
+        guard value != 0 else { return "No change" }
+
+        return value > 0 ? "+\(value) tokens" : "\(value) tokens"
     }
 
     private func thermalText(_ state: ProcessInfo.ThermalState) -> String {

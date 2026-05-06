@@ -34,6 +34,7 @@ final class LocalAIManager: ObservableObject {
     let resourceValidator = LocalModelResourceValidator()
     let settingsStore: LocalModelSettingsStore
     let modelProfileStore: LocalModelProfileStore
+    let telemetryStore: LocalInferenceTelemetryStore
     var runtimeTelemetry = LocalModelRuntimeTelemetry.empty
     var settingsValidation = LocalModelSettingsValidation.notChecked
     var settingsTestResult = LocalModelSettingsTestResult.notRun
@@ -42,17 +43,21 @@ final class LocalAIManager: ObservableObject {
     init(
         configuration: InferenceConfiguration = .default,
         settingsStore: LocalModelSettingsStore? = nil,
-        modelProfileStore: LocalModelProfileStore? = nil
+        modelProfileStore: LocalModelProfileStore? = nil,
+        telemetryStore: LocalInferenceTelemetryStore? = nil
     ) {
         self.configuration = configuration
         let resolvedSettingsStore = settingsStore ?? LocalModelSettingsStore()
         let resolvedModelProfileStore = modelProfileStore ?? LocalModelProfileStore()
+        let resolvedTelemetryStore = telemetryStore ?? LocalInferenceTelemetryStore()
         let resolvedModelProfile = resolvedModelProfileStore.load()
         self.settingsStore = resolvedSettingsStore
         self.modelProfileStore = resolvedModelProfileStore
+        self.telemetryStore = resolvedTelemetryStore
         self.settings = resolvedSettingsStore.load()
         self.activeModelProfile = resolvedModelProfile
         self.resource = resolvedModelProfile.resource
+        self.runtimeTelemetry = resolvedTelemetryStore.load()
 
         notificationObservers.append(NotificationCenter.default.addObserver(
             forName: UIApplication.didReceiveMemoryWarningNotification,

@@ -11,6 +11,7 @@ struct ChatHeaderView: View {
     let title: String
     let providerStatus: ProviderStatus
     let openMenu: () -> Void
+    let openModelDiagnostics: () -> Void
     let startNewChat: () -> Void
     let shareChat: () -> Void
     let toggleOverflow: () -> Void
@@ -34,7 +35,12 @@ struct ChatHeaderView: View {
                     .truncationMode(.tail)
                     .foregroundStyle(AppTheme.foreground.opacity(0.86))
 
-                ModelStatusChip(status: providerStatus)
+                Button(action: openModelDiagnostics) {
+                    ModelStatusChip(status: providerStatus)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Open model diagnostics")
+                .accessibilityHint("Shows exact local model status and repair steps")
             }
             .frame(minWidth: 0, maxWidth: .infinity, alignment: .leading)
 
@@ -87,6 +93,10 @@ private struct ModelStatusChip: View {
                 .font(.system(size: 10, weight: .semibold))
                 .foregroundStyle(AppTheme.foreground.opacity(0.58))
                 .lineLimit(1)
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 7, weight: .bold))
+                .foregroundStyle(AppTheme.foreground.opacity(0.32))
         }
         .padding(.horizontal, 7)
         .frame(height: 19)

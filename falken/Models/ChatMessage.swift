@@ -14,6 +14,7 @@ struct ChatMessage: Identifiable, Equatable, Codable, Sendable {
     }
 
     enum State: Equatable, Codable, Sendable {
+        case streaming
         case complete
         case stopped
         case failed

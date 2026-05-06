@@ -74,10 +74,27 @@ struct MessageRowView: View {
                     .accessibilityElement(children: .combine)
                     .accessibilityLabel(isUser ? "Your message" : "Assistant response")
 
-                if message.state == .stopped {
-                    stateBadge("Stopped", foreground: AppTheme.foreground.opacity(0.42), background: AppTheme.panelFill)
+                if message.state == .streaming {
+                    stateBadge(
+                        "Writing",
+                        systemImage: "waveform",
+                        foreground: AppTheme.foreground.opacity(0.46),
+                        background: AppTheme.panelFill
+                    )
+                } else if message.state == .stopped {
+                    stateBadge(
+                        "Stopped - partial response saved",
+                        systemImage: "stop.fill",
+                        foreground: AppTheme.foreground.opacity(0.48),
+                        background: AppTheme.panelFill
+                    )
                 } else if message.state == .failed {
-                    stateBadge("Failed", foreground: .red.opacity(0.78), background: .red.opacity(0.1))
+                    stateBadge(
+                        "Failed - partial response saved",
+                        systemImage: "exclamationmark.triangle.fill",
+                        foreground: .red.opacity(0.78),
+                        background: .red.opacity(0.1)
+                    )
                 }
             }
             .frame(maxWidth: .infinity, alignment: isUser ? .trailing : .leading)
@@ -88,8 +105,13 @@ struct MessageRowView: View {
         }
     }
 
-    private func stateBadge(_ title: String, foreground: Color, background: Color) -> some View {
-        Text(title)
+    private func stateBadge(
+        _ title: String,
+        systemImage: String,
+        foreground: Color,
+        background: Color
+    ) -> some View {
+        Label(title, systemImage: systemImage)
             .font(.system(size: 11, weight: .medium))
             .foregroundStyle(foreground)
             .padding(.horizontal, 8)
@@ -97,6 +119,7 @@ struct MessageRowView: View {
             .background(
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .fill(background)
+                    .stroke(foreground.opacity(0.16), lineWidth: 1)
             )
     }
 }

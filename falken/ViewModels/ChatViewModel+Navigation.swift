@@ -16,6 +16,13 @@ extension ChatViewModel {
         presentedOverflowItem = .settings
     }
 
+    func openModelDiagnostics() {
+        AppHaptics.selection()
+        isOverflowOpen = false
+        isComposerFocused = false
+        presentedOverflowItem = .diagnostics
+    }
+
     func openDrawer() {
         AppHaptics.selection()
         isComposerFocused = false

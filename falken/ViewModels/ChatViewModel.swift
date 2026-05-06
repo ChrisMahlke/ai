@@ -77,7 +77,7 @@ final class ChatViewModel: ObservableObject {
         let resolvedOnboardingStore = onboardingStore ?? OnboardingStore()
         self.localAIManager = manager
         self.localResponder = LocalModelChatResponder(manager: manager)
-        self.geminiResponder = GeminiChatResponder(configuration: .default)
+        self.geminiResponder = RemoteProviderChatResponder(configuration: .gemini)
         self.historyPersistence = ChatPersistenceService(
             store: historyStore ?? ChatHistoryStore(),
             policy: historyPolicy
@@ -112,7 +112,7 @@ final class ChatViewModel: ObservableObject {
         let resolvedAppearanceStore = appearanceStore ?? AppAppearanceStore()
         let resolvedOnboardingStore = onboardingStore ?? OnboardingStore()
         self.localResponder = responder
-        self.geminiResponder = GeminiChatResponder(configuration: .default)
+        self.geminiResponder = RemoteProviderChatResponder(configuration: .gemini)
         self.localAIManager = localAIManager
         self.historyPersistence = ChatPersistenceService(
             store: historyStore ?? ChatHistoryStore(),
@@ -209,7 +209,7 @@ final class ChatViewModel: ObservableObject {
                 provider: .gemini,
                 health: .notConfigured,
                 title: "Gemini not configured",
-                detail: "Remote SDK calls are intentionally behind the provider abstraction. Add Gemini credentials and SDK wiring before using it for production responses."
+                detail: "Remote calls now share the responder path with local chat. Add credentials and an SDK transport to enable production responses."
             )
         }
     }

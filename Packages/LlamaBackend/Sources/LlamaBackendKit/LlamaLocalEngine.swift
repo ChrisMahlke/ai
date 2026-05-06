@@ -365,6 +365,7 @@ public final class LlamaLocalEngine: @unchecked Sendable {
             return nil
         }
 
+        llama_sampler_chain_add(chain, llama_sampler_init_penalties(64, options.repeatPenalty, 0, 0))
         llama_sampler_chain_add(chain, llama_sampler_init_top_k(options.topK))
         llama_sampler_chain_add(chain, llama_sampler_init_top_p(options.topP, 1))
         llama_sampler_chain_add(chain, llama_sampler_init_temp(options.temperature))

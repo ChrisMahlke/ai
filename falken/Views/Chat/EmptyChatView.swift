@@ -11,8 +11,9 @@ struct EmptyChatView: View {
     let useSuggestion: (String) -> Void
 
     private let suggestions = [
-        "Summarize this.",
-        "Draft a concise reply."
+        "Summarize the key points.",
+        "Draft a concise reply.",
+        "List next actions."
     ]
 
     var body: some View {
@@ -22,12 +23,12 @@ struct EmptyChatView: View {
                 .foregroundStyle(AppTheme.foreground.opacity(0.82))
                 .textCase(.lowercase)
 
-            Text(AppBrand.tagline)
+            Text("Ask anything. Local responses stay on this device when the model is ready.")
                 .font(.system(size: 12, weight: .regular))
                 .multilineTextAlignment(.center)
                 .lineSpacing(3)
                 .foregroundStyle(AppTheme.foreground.opacity(0.44))
-                .frame(maxWidth: 320)
+                .frame(maxWidth: 340)
 
             VStack(spacing: 8) {
                 ForEach(suggestions, id: \.self) { suggestion in

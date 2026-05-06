@@ -10,6 +10,7 @@ public struct LlamaInferenceOptions: Equatable, Sendable {
     public var topP: Float
     public var temperature: Float
     public var seed: UInt32
+    public var repeatPenalty: Float
 
     public init(
         contextTokenLimit: Int32 = 2048,
@@ -20,7 +21,8 @@ public struct LlamaInferenceOptions: Equatable, Sendable {
         topK: Int32 = 40,
         topP: Float = 0.9,
         temperature: Float = 0.7,
-        seed: UInt32 = UInt32.max
+        seed: UInt32 = UInt32.max,
+        repeatPenalty: Float = 1.1
     ) {
         self.contextTokenLimit = contextTokenLimit
         self.batchTokenLimit = batchTokenLimit
@@ -31,5 +33,6 @@ public struct LlamaInferenceOptions: Equatable, Sendable {
         self.topP = topP
         self.temperature = temperature
         self.seed = seed
+        self.repeatPenalty = repeatPenalty
     }
 }

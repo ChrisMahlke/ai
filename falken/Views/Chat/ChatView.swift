@@ -28,7 +28,7 @@ struct ChatView: View {
                         onDeleteChat: viewModel.deleteRecentChat,
                         close: viewModel.togglePersistentSidebar
                     )
-                    .frame(width: 304)
+                    .frame(width: 286)
                     .transition(.move(edge: .leading).combined(with: .opacity))
                 }
 

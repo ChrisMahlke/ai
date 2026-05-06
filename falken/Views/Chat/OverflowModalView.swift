@@ -94,7 +94,7 @@ struct OverflowModalView: View {
                 header
 
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 22) {
+                    VStack(alignment: .leading, spacing: 18) {
                         titleBlock
 
                         switch item {
@@ -137,8 +137,8 @@ struct OverflowModalView: View {
                         }
                     }
                     .padding(.horizontal, 22)
-                    .padding(.top, 20)
-                    .padding(.bottom, 34)
+                    .padding(.top, 16)
+                    .padding(.bottom, 28)
                 }
             }
         }

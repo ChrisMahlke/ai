@@ -33,6 +33,7 @@ struct LocalModelSettingsContent: View {
             validationPreviewPanel
             diagnosticsPanel
             generationPanel
+            advancedPresetsPanel
             samplingPanel
             performancePanel
             actions
@@ -185,7 +186,8 @@ struct LocalModelSettingsContent: View {
     private var settingsSummary: String {
         let settings = draftSettings.clamped
         let gpuLayers = settings.gpuLayerCount == 99 ? "Auto GPU" : "\(settings.gpuLayerCount) GPU layers"
-        return "\(settings.contextTokenLimit) context · \(settings.outputTokenLimit) output · \(settings.threadCount) threads · \(gpuLayers)"
+        let seed = settings.seed.map { "seed \($0)" } ?? "random seed"
+        return "\(settings.contextTokenLimit) context · \(settings.outputTokenLimit) output · \(settings.threadCount) threads · \(gpuLayers) · \(seed)"
     }
 
     private var validationPreviewPanel: some View {
@@ -334,7 +336,7 @@ struct LocalModelSettingsContent: View {
                     valueText: "\(draftSettings.contextTokenLimit) tokens",
                     note: "Conversation memory kept for each reply.",
                     value: $draftSettings.contextTokenLimit,
-                    range: 512...2048,
+                    range: 512...4096,
                     step: 128
                 )
 
@@ -345,6 +347,52 @@ struct LocalModelSettingsContent: View {
                     value: $draftSettings.outputTokenLimit,
                     range: 64...512,
                     step: 32
+                )
+            }
+        }
+    }
+
+    private var advancedPresetsPanel: some View {
+        ModalPanel {
+            VStack(alignment: .leading, spacing: 16) {
+                SectionTitle("Advanced controls")
+
+                segmentedPresetRow(
+                    title: "Temperature preset",
+                    items: TemperaturePreset.allCases,
+                    isSelected: { abs(draftSettings.temperature - $0.value) < 0.01 },
+                    select: { draftSettings.temperature = $0.value }
+                )
+
+                segmentedPresetRow(
+                    title: "Context preset",
+                    items: ContextWindowPreset.allCases,
+                    isSelected: { draftSettings.contextTokenLimit == $0.tokens },
+                    select: { draftSettings.contextTokenLimit = $0.tokens }
+                )
+
+                IntegerSettingRow(
+                    title: "Seed",
+                    valueText: draftSettings.seed.map(String.init) ?? "Random",
+                    note: "Use 0 for random; fixed values reproduce sampling.",
+                    value: Binding(
+                        get: { Int(draftSettings.seed ?? 0) },
+                        set: { draftSettings.seed = $0 == 0 ? nil : UInt32($0) }
+                    ),
+                    range: 0...9999,
+                    step: 127
+                )
+
+                DecimalSettingSlider(
+                    title: "Repeat penalty",
+                    valueText: String(format: "%.2f", draftSettings.repeatPenalty),
+                    note: "Higher values reduce repeated wording.",
+                    value: Binding(
+                        get: { draftSettings.repeatPenalty },
+                        set: { draftSettings.repeatPenalty = $0 }
+                    ),
+                    range: 1.0...1.4,
+                    step: 0.01
                 )
             }
         }
@@ -476,6 +524,37 @@ struct LocalModelSettingsContent: View {
                             .frame(width: 76, height: 38)
                             .background(Color.red.opacity(0.12))
                             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
+    private func segmentedPresetRow<Item: Identifiable & RawRepresentable>(
+        title: String,
+        items: [Item],
+        isSelected: @escaping (Item) -> Bool,
+        select: @escaping (Item) -> Void
+    ) -> some View where Item.RawValue == String {
+        VStack(alignment: .leading, spacing: 9) {
+            Text(title)
+                .font(.system(size: 15, weight: .medium))
+                .foregroundStyle(AppTheme.foreground.opacity(0.9))
+
+            HStack(spacing: 8) {
+                ForEach(items) { item in
+                    Button {
+                        select(item)
+                    } label: {
+                        Text(item.rawValue)
+                            .font(.system(size: 12, weight: .semibold))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 32)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                    .fill(isSelected(item) ? AppTheme.elevatedFill : AppTheme.panelFill)
+                            )
                     }
                     .buttonStyle(.plain)
                 }

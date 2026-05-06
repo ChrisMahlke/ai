@@ -133,7 +133,9 @@ extension LocalAIManager {
             threadCount: Int32(clampedSettings.threadCount),
             topK: Int32(clampedSettings.topK),
             topP: Float(clampedSettings.topP),
-            temperature: Float(clampedSettings.temperature)
+            temperature: Float(clampedSettings.temperature),
+            seed: clampedSettings.seed ?? UInt32.max,
+            repeatPenalty: Float(clampedSettings.repeatPenalty)
         )
     }
 
@@ -148,7 +150,9 @@ extension LocalAIManager {
             threadCount: Int(options.threadCount),
             topK: Int(options.topK),
             topP: Double(options.topP),
-            temperature: Double(options.temperature)
+            temperature: Double(options.temperature),
+            seed: options.seed == UInt32.max ? nil : options.seed,
+            repeatPenalty: Double(options.repeatPenalty)
         ).clamped
         let expectedSettings = requestedSettings.clamped
 
@@ -177,5 +181,7 @@ extension LocalAIManager {
         && left.topK == right.topK
         && abs(left.topP - right.topP) < 0.001
         && abs(left.temperature - right.temperature) < 0.001
+        && left.seed == right.seed
+        && abs(left.repeatPenalty - right.repeatPenalty) < 0.001
     }
 }

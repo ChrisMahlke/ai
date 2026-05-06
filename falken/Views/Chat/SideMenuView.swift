@@ -110,11 +110,11 @@ struct SideMenuView: View {
                 .padding(.top, 4)
 
             searchField
-                .padding(.horizontal, 18)
+                .padding(.horizontal, 14)
                 .padding(.top, 12)
 
             searchScopePicker
-                .padding(.horizontal, 18)
+                .padding(.horizontal, 14)
                 .padding(.top, 8)
 
             Spacer(minLength: 18)
@@ -144,9 +144,9 @@ struct SideMenuView: View {
             .buttonStyle(.plain)
             .accessibilityLabel("Close menu")
         }
-        .padding(.horizontal, 18)
+        .padding(.horizontal, 14)
         .padding(.top, 18)
-        .padding(.bottom, 18)
+        .padding(.bottom, 14)
     }
 
     private var recentChatsSection: some View {
@@ -165,7 +165,7 @@ struct SideMenuView: View {
                         .foregroundStyle(AppTheme.foreground.opacity(0.32))
                 }
             }
-            .padding(.horizontal, 18)
+            .padding(.horizontal, 14)
 
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 4) {

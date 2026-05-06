@@ -88,6 +88,106 @@ The Settings screen exposes:
 
 Diagnostics are local-only and designed for troubleshooting. They should not include chat message text or user identifiers.
 
+## Screenshots and UX Walkthrough
+
+The screenshots below show the current app experience and the main operational surfaces users rely on while running local inference.
+
+### Welcome and Composer
+
+<img src="docs/screenshots/IMG_3660.png" alt="Welcome screen with local model ready status, prompt suggestions, and composer" width="360">
+
+On cold launch, `falken` opens to a fresh chat with the welcome screen visible. The header shows the current chat title, a compact model status chip, new-chat/share/overflow actions, and the bottom composer. The suggested prompts help users start without needing to understand model settings first.
+
+Technically, this state is produced by `ChatViewModel.restoreHistory()`: any previously active persisted conversation is moved into `recentChats`, while `messages` is reset to an empty array. `EmptyChatView` renders the brand, local-first reassurance copy, and starter prompt actions. The status chip is derived from `ProviderStatus`, which reflects `LocalAIManager.LoadState` for local inference.
+
+### Recent Chats Drawer
+
+<img src="docs/screenshots/IMG_3661.png" alt="Recent chats drawer with search scopes and archived chat row" width="360">
+
+The drawer gives users a simple way to resume prior work. It includes a new-chat action, saved prompts, scoped search, and recent chat rows with pin/delete controls. This makes cold launch less disruptive: old work is available, but it does not automatically take over the main screen.
+
+Technically, `SideMenuView` receives `recentChats` from `ChatViewModel`. Search is local and in-memory, with scopes for all chats, titles, message bodies, and pinned chats. Pinning mutates `ChatSession.isPinned`; sorting keeps pinned conversations above unpinned conversations, then orders by `updatedAt`.
+
+### Overflow Menu
+
+<img src="docs/screenshots/IMG_3662.png" alt="Overflow menu with rename, archive, models, diagnostics, settings, and help actions" width="360">
+
+The overflow menu is the main command surface for chat-level and app-level actions. Users can rename or archive the current conversation, inspect installed models, open diagnostics, adjust settings, or read help.
+
+Technically, menu selection flows through `ChatViewModel+Navigation.swift`. Each item maps to an `OverflowMenuItem`, which drives a full-screen modal. This keeps modal routing centralized while allowing each content area to live in focused SwiftUI views such as `OverflowModalSettingsContent`, `OverflowModalDiagnosticsContent`, and `OverflowModalModelManagementContent`.
+
+### Diagnostics Status
+
+<img src="docs/screenshots/diagnostics_01.png" alt="Diagnostics status cards showing current model status, rolling telemetry, and repair steps" width="360">
+
+The diagnostics status view answers the practical question, "Is the local model healthy right now?" It shows provider, model, file, size, thermal state, last load time, rolling performance telemetry, and suggested repair steps.
+
+Technically, this combines `LocalModelDiagnostics`, `LocalModelRuntimeTelemetry`, `ProviderStatus`, and `LocalModelSettingsValidation`. Load time, first-token latency, tokens per second, and failure counts are stored locally through `LocalInferenceTelemetryStore`. The rolling samples are capped so diagnostics remain small and device-local.
+
+### Diagnostics Report
+
+<img src="docs/screenshots/IMG_3665.png" alt="Diagnostics report modal with anonymized report and copy diagnostics button" width="360">
+
+The diagnostics report is designed for support and debugging. It explains that chat content and user identifiers are excluded, then presents a copyable technical report containing model status, device memory, app memory, thermal state, load timing, telemetry, appearance, recent chat count, current message count, and installed model summary.
+
+Technically, `ChatViewModel.diagnosticsReport()` formats this report from app state and local model diagnostics. The report intentionally avoids prompt text and response text. `Copy diagnostics` writes the generated string to `UIPasteboard` so users can share reproducible technical context without exposing conversations.
+
+### Settings Overview
+
+<img src="docs/screenshots/IMG_3667.png" alt="Settings modal showing provider selection, appearance controls, and local model presets" width="360">
+
+Settings start with high-level choices: local versus remote provider, appearance, and memory-oriented local model presets. The Local provider is selected and marked ready, while Gemini is shown as a remote-provider slot behind the same responder architecture.
+
+Technically, provider selection is persisted with `ChatProviderStore`, appearance with `AppAppearanceStore`, and local model defaults with `LocalModelSettingsStore`. The preset rows map to `LocalModelPreset` values that tune context length, output limit, GPU layers, thread count, and sampling defaults. Selecting settings unloads the current model so the next load uses the new `LlamaInferenceOptions`.
+
+### Settings Preview and Model Diagnostics
+
+<img src="docs/screenshots/IMG_3668.png" alt="Settings screen showing apply preview and model diagnostics table" width="360">
+
+The apply preview estimates the cost of the draft settings before the user applies them. It shows estimated RAM, context cache size, context change, response change, and risk level. The model diagnostics table below shows exactly what the backend sees: active model, file, size, settings validation, device memory, app memory, thermal state, load timings, peak generation memory, and failure rate.
+
+Technically, `LocalModelSettingsImpact` estimates memory/context impact from the draft settings and active model profile. `LocalAIManager.validateAppliedSettings` compares saved settings against the actual backend options that would be sent to `llama.cpp`, catching mismatches before users assume a setting is active.
+
+### Sampling and Performance Controls
+
+<img src="docs/screenshots/settings_02.png" alt="Advanced sampling and performance controls for temperature, top P, top K, GPU layers, and threads" width="360">
+
+Advanced controls expose the tradeoffs that affect local generation quality and device pressure. Temperature, Top P, and Top K change sampling behavior. GPU layers and thread count influence latency, memory pressure, battery drain, and heat.
+
+Technically, these controls feed `LocalModelSettings`, then `LocalAIManager.makeInferenceOptions(from:)` converts them into `LlamaInferenceOptions`. GPU layers use `99` as the app-level "Auto" sentinel, which lets the backend choose acceleration strategy while keeping the UI simple.
+
+### Generation and Reproducibility Controls
+
+<img src="docs/screenshots/settings.png" alt="Generation settings with context, response length, temperature presets, context presets, seed, and repeat penalty" width="360">
+
+Generation controls tune how much conversation the model can see, how long the next answer can be, how deterministic sampling should be, and how aggressively repeated wording is discouraged. Presets make common choices fast, while sliders allow precise manual tuning.
+
+Technically, context and response values reserve token budget before `PromptContextOptimizer` compacts history. Seed `0` means random; non-zero seeds are persisted as fixed `UInt32` values for reproducible sampling. Repeat penalty maps directly into backend inference options to reduce local loops and phrase repetition.
+
+### Installed Models
+
+<img src="docs/screenshots/models_01.png" alt="Installed models list showing Small Fast active and Better Quality not installed" width="520">
+
+The Models screen shows which local profiles are actually installed. Small / Fast is active and selected. Better Quality is visible but unavailable because its GGUF file has not been bundled.
+
+Technically, `LocalModelResourceValidator.installedModels()` checks bundle lookup, expected filename, target membership, and file size bounds from `LocalModelRegistry`. Only valid installed profiles can be selected. This prevents the UI from switching to a profile that cannot load.
+
+### Model Installation Details
+
+<img src="docs/screenshots/models_02.png" alt="Model installation instructions with expected filenames, size ranges, folder, and target membership" width="360">
+
+The installation panel gives users the exact filenames, expected size ranges, folder, and target membership required for each supported profile. It also explains why users should keep only the models they need in the app target: every bundled model increases app size and can increase memory pressure.
+
+Technically, these details are generated from the same registry data used by validation. This reduces documentation drift inside the app: if a model descriptor changes, install instructions, validation, and model status should change together.
+
+### Model Diagnostics and Validation Actions
+
+<img src="docs/screenshots/models.png" alt="Model diagnostics panel with validate and test actions" width="360">
+
+The model diagnostics panel exposes direct validation and test actions. `Validate` checks whether saved settings match backend options. `Test` runs a tiny local prompt to confirm that the loaded model can generate a response.
+
+Technically, validation does not require a full user conversation; it compares settings transformation and backend option construction. Testing uses `LocalAIManager.testCurrentSettings()` with a short prompt and records the result in `LocalModelSettingsTestResult`. This separates configuration correctness from runtime generation health.
+
 ## Architecture
 
 The codebase uses SwiftUI with an MVVM-oriented app shell and smaller services for model lifecycle, generation, persistence, and validation.

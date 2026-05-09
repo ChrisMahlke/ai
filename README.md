@@ -4,6 +4,8 @@
 
 The default path is local inference. Optional remote providers can be added behind the responder abstraction without replacing the on-device chat architecture.
 
+[Article](https://medium.com/@cmahlke/engineering-local-first-ai-a-blueprint-for-native-ios-llm-runtimes-8c568dc71317)
+
 ## Quick Start
 
 1. Install Xcode with iOS SDK support.
